@@ -3,6 +3,7 @@ import { useGeckoContext } from '../context/GeckoContext';
 import type { Gecko } from '../types/gecko';
 import { QRCodeSVG } from 'qrcode.react';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
+import { EditGeckoModal } from './EditGeckoModal';
 import { 
   Search, 
   Plus, 
@@ -11,7 +12,8 @@ import {
   Trash2, 
   ChevronRight,
   TrendingUp,
-  Dna
+  Dna,
+  Edit3
 } from 'lucide-react';
 
 export const GeckoListView: React.FC<{
@@ -24,8 +26,9 @@ export const GeckoListView: React.FC<{
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'name' | 'weight' | 'date'>('date');
 
-  // Selected gecko for profile modal
+  // Selected gecko for profile modal & editing modal
   const [activeGecko, setActiveGecko] = useState<Gecko | null>(null);
+  const [editingGecko, setEditingGecko] = useState<Gecko | null>(null);
   const [showQrModal, setShowQrModal] = useState<Gecko | null>(null);
   const [newWeightInput, setNewWeightInput] = useState<string>('');
 
@@ -163,7 +166,7 @@ export const GeckoListView: React.FC<{
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', fontSize: '0.8rem', color: '#94a3b8', marginBottom: '1rem' }}>
                     <span>⚖️ Súly: <strong style={{ color: '#f8fafc' }}>{gecko.weightGrams ? `${gecko.weightGrams}g` : 'Nincs mérés'}</strong></span>
-                    <span>🏠 Vásárolt tenyésztő: <strong style={{ color: '#f8fafc' }}>{gecko.breederName || 'Saját tenyésztés'}</strong></span>
+                    <span>🏠 Vásárolt tenyésztő: <strong style={{ color: '#f8fafc' }}>{gecko.breederName || 'Saját tenyészet'}</strong></span>
                     <span>🎂 Kikelés: <strong style={{ color: '#f8fafc' }}>{gecko.hatchDate || 'Ismeretlen'}</strong></span>
                   </div>
                 </div>
@@ -196,13 +199,21 @@ export const GeckoListView: React.FC<{
                   >
                     <Dna size={16} />
                   </button>
+                  <button 
+                    title="Adatlap Szerkesztése"
+                    onClick={() => setEditingGecko(gecko)}
+                    className="btn btn-secondary btn-sm"
+                    style={{ color: '#38bdf8' }}
+                  >
+                    <Edit3 size={16} />
+                  </button>
                 </div>
 
                 <button 
                   onClick={() => setActiveGecko(gecko)}
                   className="btn btn-primary btn-sm"
                 >
-                  Adatlap & Súlygrafikon <ChevronRight size={14} />
+                  Adatlap <ChevronRight size={14} />
                 </button>
               </div>
             </div>
@@ -219,7 +230,20 @@ export const GeckoListView: React.FC<{
                 <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#f8fafc' }}>{activeGecko.name}</h3>
                 <span className={`badge badge-gender-${activeGecko.gender}`}>{activeGecko.gender}</span>
               </div>
-              <button onClick={() => setActiveGecko(null)} className="btn btn-secondary btn-sm">✕</button>
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <button 
+                  onClick={() => {
+                    const toEdit = activeGecko;
+                    setActiveGecko(null);
+                    setEditingGecko(toEdit);
+                  }}
+                  className="btn btn-secondary btn-sm"
+                  style={{ color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
+                >
+                  <Edit3 size={14} /> Szerkesztés
+                </button>
+                <button onClick={() => setActiveGecko(null)} className="btn btn-secondary btn-sm">✕</button>
+              </div>
             </div>
 
             <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -301,11 +325,28 @@ export const GeckoListView: React.FC<{
               >
                 <Trash2 size={16} /> Törlés
               </button>
+              <button 
+                onClick={() => {
+                  const toEdit = activeGecko;
+                  setActiveGecko(null);
+                  setEditingGecko(toEdit);
+                }}
+                className="btn btn-primary"
+              >
+                <Edit3 size={16} /> Adatlap Szerkesztése
+              </button>
               <button onClick={() => setActiveGecko(null)} className="btn btn-secondary">Bezárás</button>
             </div>
           </div>
         </div>
       )}
+
+      {/* Edit Gecko Modal */}
+      <EditGeckoModal
+        gecko={editingGecko}
+        isOpen={Boolean(editingGecko)}
+        onClose={() => setEditingGecko(null)}
+      />
 
       {/* QR Code Printable Tag Modal */}
       {showQrModal && (
@@ -337,3 +378,4 @@ export const GeckoListView: React.FC<{
     </div>
   );
 };
+
