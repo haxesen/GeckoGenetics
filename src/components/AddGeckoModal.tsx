@@ -2,7 +2,46 @@ import React, { useState } from 'react';
 import { useGeckoContext } from '../context/GeckoContext';
 import type { Gender, GeckoStatus, GeckoGenetics } from '../types/gecko';
 import { DEFAULT_GENETICS, buildMorphString } from '../utils/genetics';
-import { PlusCircle, Dna } from 'lucide-react';
+import { PlusCircle, Dna, Upload, Link } from 'lucide-react';
+
+const compressImage = (file: File, maxWidth = 1200, maxHeight = 1200, quality = 0.85): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth || height > maxHeight) {
+          if (width > height) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          } else {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          resolve(event.target?.result as string);
+          return;
+        }
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+        resolve(dataUrl);
+      };
+      img.onerror = (err) => reject(err);
+    };
+    reader.onerror = (err) => reject(err);
+  });
+};
 
 export const AddGeckoModal: React.FC<{
   isOpen: boolean;
@@ -22,11 +61,29 @@ export const AddGeckoModal: React.FC<{
   const [weightGrams, setWeightGrams] = useState<string>('');
   const [notes, setNotes] = useState('');
   const [mainImageUrl, setMainImageUrl] = useState('');
+  const [imageMode, setImageMode] = useState<'upload' | 'url'>('upload');
+  const [isUploading, setIsUploading] = useState(false);
 
   // Genetics flags
   const [genetics, setGenetics] = useState<GeckoGenetics>({ ...DEFAULT_GENETICS });
 
   if (!isOpen) return null;
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsUploading(true);
+      const compressedDataUrl = await compressImage(file);
+      setMainImageUrl(compressedDataUrl);
+    } catch (err) {
+      console.error('Kép feldolgozási hiba:', err);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -138,17 +195,130 @@ export const AddGeckoModal: React.FC<{
               </div>
             </div>
 
-            {/* Image URL & Hatch Date */}
-            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1rem' }}>
+            {/* Image Upload / URL & Hatch Date */}
+            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1rem', alignItems: 'flex-start' }}>
               <div className="form-group" style={{ margin: 0 }}>
-                <label className="form-label">Főkép URL (Kép hivatkozás)</label>
-                <input type="url" className="form-input" placeholder="https://..." value={mainImageUrl} onChange={e => setMainImageUrl(e.target.value)} />
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
+                  <label className="form-label" style={{ margin: 0 }}>Gekkó Fotó (Főkép)</label>
+                  <div style={{ display: 'flex', gap: '0.25rem', background: 'rgba(0,0,0,0.3)', padding: 2, borderRadius: 6 }}>
+                    <button
+                      type="button"
+                      onClick={() => setImageMode('upload')}
+                      style={{
+                        background: imageMode === 'upload' ? '#10b981' : 'transparent',
+                        color: imageMode === 'upload' ? '#fff' : '#94a3b8',
+                        border: 'none',
+                        padding: '0.2rem 0.5rem',
+                        borderRadius: 4,
+                        fontSize: '0.75rem',
+                        cursor: 'pointer',
+                        fontWeight: 600,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.25rem'
+                      }}
+                    >
+                      <Upload size={12} /> Feltöltés
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setImageMode('url')}
+                      style={{
+                        background: imageMode === 'url' ? '#10b981' : 'transparent',
+                        color: imageMode === 'url' ? '#fff' : '#94a3b8',
+                        border: 'none',
+                        padding: '0.2rem 0.5rem',
+                        borderRadius: 4,
+                        fontSize: '0.75rem',
+                        cursor: 'pointer',
+                        fontWeight: 600,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.25rem'
+                      }}
+                    >
+                      <Link size={12} /> URL Link
+                    </button>
+                  </div>
+                </div>
+
+                {imageMode === 'upload' ? (
+                  <div>
+                    <label 
+                      style={{
+                        border: '2px dashed rgba(16, 185, 129, 0.4)',
+                        borderRadius: 10,
+                        padding: '0.75rem 1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.6rem',
+                        cursor: 'pointer',
+                        background: 'rgba(16, 185, 129, 0.05)',
+                        color: '#34d399',
+                        fontSize: '0.85rem',
+                        fontWeight: 600,
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      <Upload size={18} />
+                      {isUploading ? 'Feldolgozás...' : 'Kép Kiválasztása (Fájl tallózása)'}
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        onChange={handleFileUpload} 
+                        style={{ display: 'none' }} 
+                      />
+                    </label>
+                  </div>
+                ) : (
+                  <input 
+                    type="url" 
+                    className="form-input" 
+                    placeholder="https://images.unsplash.com/..." 
+                    value={mainImageUrl} 
+                    onChange={e => setMainImageUrl(e.target.value)} 
+                  />
+                )}
+
+                {/* Preview Box if mainImageUrl is set */}
+                {mainImageUrl && (
+                  <div style={{
+                    marginTop: '0.5rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.75rem',
+                    background: 'rgba(0,0,0,0.3)',
+                    padding: '0.5rem',
+                    borderRadius: 8,
+                    border: '1px solid rgba(255,255,255,0.08)'
+                  }}>
+                    <img 
+                      src={mainImageUrl} 
+                      alt="Preview" 
+                      style={{ width: 44, height: 44, borderRadius: 6, objectFit: 'cover' }} 
+                    />
+                    <span style={{ fontSize: '0.8rem', color: '#34d399', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      ✓ Kép sikeresen kiválasztva
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setMainImageUrl('')}
+                      className="btn btn-secondary btn-sm"
+                      style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem', color: '#f43f5e' }}
+                    >
+                      ✕ Törlés
+                    </button>
+                  </div>
+                )}
               </div>
+
               <div className="form-group" style={{ margin: 0 }}>
                 <label className="form-label">Kikelési Dátum</label>
                 <input type="date" className="form-input" value={hatchDate} onChange={e => setHatchDate(e.target.value)} />
               </div>
             </div>
+
 
             {/* Genetics Flags */}
             <div style={{
