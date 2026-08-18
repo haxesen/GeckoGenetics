@@ -244,9 +244,14 @@ export const GeckoListView: React.FC<{
         <div className="modal-overlay" onClick={() => setActiveGecko(null)}>
           <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: 800 }}>
             <div className="modal-header">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
                 <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#f8fafc' }}>{activeGecko.name}</h3>
-                <span className={`badge badge-gender-${activeGecko.gender}`}>{activeGecko.gender}</span>
+                <span className={`badge badge-gender-${activeGecko.gender}`}>
+                  {activeGecko.gender === 'male' ? '♂ Hím' : activeGecko.gender === 'female' ? '♀ Nőstény' : '❓ Unsexed'}
+                </span>
+                <span className={`badge badge-status-${activeGecko.status}`}>
+                  {activeGecko.status === 'breeder' ? 'Tenyészállat' : activeGecko.status === 'for_sale' ? 'Eladó' : activeGecko.status === 'reserved' ? 'Foglalt' : activeGecko.status === 'sold' ? 'Eladott' : 'Kedvenc'}
+                </span>
               </div>
               <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                 <button 
@@ -264,9 +269,10 @@ export const GeckoListView: React.FC<{
               </div>
             </div>
 
-            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               {/* Profile Top Summary & Image Gallery */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1.5rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '1.5rem', alignItems: 'flex-start' }}>
+                {/* Photo Gallery */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                   {(() => {
                     const geckoImages = activeGecko.images && activeGecko.images.length > 0
@@ -274,13 +280,12 @@ export const GeckoListView: React.FC<{
                       : (activeGecko.mainImageUrl ? [activeGecko.mainImageUrl] : []);
                     const currentImg = geckoImages[activePhotoIdx] || geckoImages[0] || DEFAULT_GECKO_IMAGE;
 
-
                     return (
                       <>
                         <img 
                           src={currentImg}
                           alt={activeGecko.name}
-                          style={{ width: '100%', height: 190, objectFit: 'cover', borderRadius: 12, border: '1px solid rgba(255,255,255,0.1)' }}
+                          style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover', borderRadius: 12, border: '1px solid rgba(255,255,255,0.1)' }}
                         />
                         {geckoImages.length > 1 && (
                           <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
@@ -308,15 +313,59 @@ export const GeckoListView: React.FC<{
                   })()}
                 </div>
 
+                {/* Primary Metadata Table */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <h4 style={{ color: '#10b981', fontSize: '1.2rem', fontWeight: 800, margin: 0 }}>{activeGecko.morph}</h4>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-                  <h4 style={{ color: '#10b981', fontSize: '1.15rem', fontWeight: 700 }}>{activeGecko.morph}</h4>
-                  <p style={{ color: '#94a3b8', fontSize: '0.85rem' }}>Kód: <strong style={{ color: '#f8fafc' }}>{activeGecko.code}</strong></p>
-                  <p style={{ color: '#94a3b8', fontSize: '0.85rem' }}>Tenyésztő / Származás: <strong style={{ color: '#f8fafc' }}>{activeGecko.breederName || 'Saját tenyészet'}</strong></p>
-                  <p style={{ color: '#94a3b8', fontSize: '0.85rem' }}>Vásárlási Ár: <strong style={{ color: '#38bdf8' }}>{activeGecko.purchasePrice ? `${activeGecko.purchasePrice.toLocaleString()} HUF` : 'Saját kikelés'}</strong></p>
-                  <p style={{ color: '#94a3b8', fontSize: '0.85rem' }}>Kikelési Dátum: <strong style={{ color: '#f8fafc' }}>{activeGecko.hatchDate || 'Ismeretlen'}</strong></p>
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr',
+                    gap: '0.65rem',
+                    background: 'rgba(0,0,0,0.25)',
+                    padding: '0.85rem',
+                    borderRadius: 10,
+                    border: '1px solid rgba(255,255,255,0.06)',
+                    fontSize: '0.825rem'
+                  }}>
+                    <div>
+                      <span style={{ color: '#94a3b8', display: 'block', fontSize: '0.75rem' }}>🏷️ Törzskönyvi Kód:</span>
+                      <strong style={{ color: '#f8fafc' }}>{activeGecko.code}</strong>
+                    </div>
 
-                  {/* Parents Quick Card */}
+                    <div>
+                      <span style={{ color: '#94a3b8', display: 'block', fontSize: '0.75rem' }}>⚖️ Súly:</span>
+                      <strong style={{ color: '#38bdf8' }}>{activeGecko.weightGrams ? `${activeGecko.weightGrams} g` : 'Nincs mérés'}</strong>
+                    </div>
+
+                    <div>
+                      <span style={{ color: '#94a3b8', display: 'block', fontSize: '0.75rem' }}>🎂 Kikelési Dátum:</span>
+                      <strong style={{ color: '#f8fafc' }}>{activeGecko.hatchDate || 'Ismeretlen'}</strong>
+                    </div>
+
+                    <div>
+                      <span style={{ color: '#94a3b8', display: 'block', fontSize: '0.75rem' }}>🏠 Tenyésztő / Származás:</span>
+                      <strong style={{ color: '#f8fafc' }}>{activeGecko.breederName || 'Saját tenyészet'}</strong>
+                    </div>
+
+                    <div>
+                      <span style={{ color: '#94a3b8', display: 'block', fontSize: '0.75rem' }}>💰 Vásárlási Ár:</span>
+                      <strong style={{ color: '#fbbf24' }}>{activeGecko.purchasePrice ? `${activeGecko.purchasePrice.toLocaleString()} HUF` : 'Saját kikelés'}</strong>
+                    </div>
+
+                    {activeGecko.purchaseDate && (
+                      <div>
+                        <span style={{ color: '#94a3b8', display: 'block', fontSize: '0.75rem' }}>📅 Vásárlás Dátuma:</span>
+                        <strong style={{ color: '#f8fafc' }}>{activeGecko.purchaseDate}</strong>
+                      </div>
+                    )}
+
+                    <div>
+                      <span style={{ color: '#94a3b8', display: 'block', fontSize: '0.75rem' }}>⏱️ Rögzítés Dátuma:</span>
+                      <strong style={{ color: '#cbd5e1' }}>{new Date(activeGecko.createdAt).toLocaleDateString('hu-HU')}</strong>
+                    </div>
+                  </div>
+
+                  {/* Parents Quick Section */}
                   {(() => {
                     const fGecko = activeGecko.fatherId ? geckos.find(g => g.id === activeGecko.fatherId) : null;
                     const mGecko = activeGecko.motherId ? geckos.find(g => g.id === activeGecko.motherId) : null;
@@ -329,38 +378,97 @@ export const GeckoListView: React.FC<{
 
                     return (
                       <div style={{
-                        marginTop: '0.4rem',
                         background: 'rgba(0,0,0,0.3)',
                         border: '1px solid rgba(255,255,255,0.06)',
-                        padding: '0.5rem 0.75rem',
-                        borderRadius: 8,
+                        padding: '0.65rem 0.85rem',
+                        borderRadius: 10,
                         display: 'flex',
-                        gap: '1rem'
+                        flexDirection: 'column',
+                        gap: '0.4rem'
                       }}>
-                        {fName && (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                            {fPic && <img src={fPic} alt="Apa" style={{ width: 28, height: 28, borderRadius: 4, objectFit: 'cover' }} />}
-                            <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>♂ Apa: <strong style={{ color: '#38bdf8' }}>{fName}</strong></span>
-                          </div>
-                        )}
-                        {mName && (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                            {mPic && <img src={mPic} alt="Anya" style={{ width: 28, height: 28, borderRadius: 4, objectFit: 'cover' }} />}
-                            <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>♀ Anya: <strong style={{ color: '#fb7185' }}>{mName}</strong></span>
-                          </div>
-                        )}
+                        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#38bdf8' }}>🧬 Szülők & Családfa:</span>
+                        <div style={{ display: 'flex', gap: '1.25rem', flexWrap: 'wrap' }}>
+                          {fName && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                              {fPic ? (
+                                <img src={fPic} alt="Apa" style={{ width: 32, height: 32, borderRadius: 6, objectFit: 'cover', border: '1px solid #38bdf8' }} />
+                              ) : (
+                                <span style={{ fontSize: '0.85rem' }}>♂</span>
+                              )}
+                              <div>
+                                <span style={{ fontSize: '0.7rem', color: '#94a3b8', display: 'block' }}>APA</span>
+                                <strong style={{ fontSize: '0.825rem', color: '#38bdf8' }}>{fName}</strong>
+                              </div>
+                            </div>
+                          )}
+                          {mName && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                              {mPic ? (
+                                <img src={mPic} alt="Anya" style={{ width: 32, height: 32, borderRadius: 6, objectFit: 'cover', border: '1px solid #fb7185' }} />
+                              ) : (
+                                <span style={{ fontSize: '0.85rem' }}>♀</span>
+                              )}
+                              <div>
+                                <span style={{ fontSize: '0.7rem', color: '#94a3b8', display: 'block' }}>ANYA</span>
+                                <strong style={{ fontSize: '0.825rem', color: '#fb7185' }}>{mName}</strong>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     );
                   })()}
-
-                  {activeGecko.notes && (
-                    <p style={{ color: '#cbd5e1', fontSize: '0.85rem', background: 'rgba(255,255,255,0.03)', padding: '0.65rem', borderRadius: 8, marginTop: '0.4rem' }}>
-                      📝 {activeGecko.notes}
-                    </p>
-                  )}
                 </div>
-
               </div>
+
+              {/* Genetics Badges Summary */}
+              {activeGecko.genetics && (
+                <div style={{
+                  background: 'rgba(0,0,0,0.25)',
+                  border: '1px solid rgba(255,255,255,0.06)',
+                  borderRadius: 10,
+                  padding: '0.85rem 1rem'
+                }}>
+                  <h5 style={{ fontSize: '0.8rem', color: '#34d399', fontWeight: 700, margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <Dna size={14} /> Regisztrált Genetikai Tulajdonságok
+                  </h5>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                    {activeGecko.genetics.hypo && <span className="badge" style={{ background: 'rgba(245, 158, 11, 0.2)', color: '#fbbf24', border: '1px solid rgba(245, 158, 11, 0.4)' }}>Hypo</span>}
+                    {activeGecko.genetics.lillyWhite && <span className="badge" style={{ background: 'rgba(16, 185, 129, 0.2)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.4)' }}>Lilly White</span>}
+                    {activeGecko.genetics.axanthic === 'visual' && <span className="badge" style={{ background: 'rgba(192, 132, 252, 0.2)', color: '#c084fc', border: '1px solid rgba(192, 132, 252, 0.4)' }}>Visual Axanthic</span>}
+                    {activeGecko.genetics.axanthic === 'het' && <span className="badge" style={{ background: 'rgba(192, 132, 252, 0.15)', color: '#e9d5ff', border: '1px solid rgba(192, 132, 252, 0.3)' }}>100% Het Axanthic</span>}
+                    {activeGecko.genetics.cappuccino === 'super' && <span className="badge" style={{ background: 'rgba(236, 72, 153, 0.2)', color: '#f472b6', border: '1px solid rgba(236, 72, 153, 0.4)' }}>Super Cappuccino</span>}
+                    {activeGecko.genetics.cappuccino === 'visual' && <span className="badge" style={{ background: 'rgba(236, 72, 153, 0.15)', color: '#f472b6', border: '1px solid rgba(236, 72, 153, 0.3)' }}>Cappuccino</span>}
+                    {activeGecko.genetics.phantom && <span className="badge" style={{ background: 'rgba(148, 163, 184, 0.2)', color: '#cbd5e1', border: '1px solid rgba(148, 163, 184, 0.4)' }}>Phantom</span>}
+                    {activeGecko.genetics.sable && <span className="badge" style={{ background: 'rgba(148, 163, 184, 0.2)', color: '#cbd5e1', border: '1px solid rgba(148, 163, 184, 0.4)' }}>Sable</span>}
+                    {activeGecko.genetics.pattern && activeGecko.genetics.pattern !== 'patternless' && (
+                      <span className="badge" style={{ background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.4)' }}>
+                        Mintázat: {activeGecko.genetics.pattern.replace('_', ' ')}
+                      </span>
+                    )}
+                    {activeGecko.genetics.pinstripe && activeGecko.genetics.pinstripe !== 'none' && (
+                      <span className="badge" style={{ background: 'rgba(251, 191, 36, 0.2)', color: '#fbbf24', border: '1px solid rgba(251, 191, 36, 0.4)' }}>
+                        Pinstripe: {activeGecko.genetics.pinstripe}
+                      </span>
+                    )}
+                    {activeGecko.genetics.dalmatian && activeGecko.genetics.dalmatian !== 'none' && (
+                      <span className="badge" style={{ background: 'rgba(168, 85, 247, 0.2)', color: '#c084fc', border: '1px solid rgba(168, 85, 247, 0.4)' }}>
+                        Dalmatian: {activeGecko.genetics.dalmatian}
+                      </span>
+                    )}
+                    {activeGecko.genetics.whitewall && <span className="badge" style={{ background: 'rgba(255, 255, 255, 0.15)', color: '#ffffff', border: '1px solid rgba(255, 255, 255, 0.3)' }}>Whitewall</span>}
+                    {activeGecko.genetics.inkSpot && <span className="badge" style={{ background: 'rgba(255, 255, 255, 0.15)', color: '#ffffff', border: '1px solid rgba(255, 255, 255, 0.3)' }}>Ink Spot</span>}
+                  </div>
+                </div>
+              )}
+
+              {activeGecko.notes && (
+                <div style={{ background: 'rgba(255,255,255,0.03)', padding: '0.75rem 1rem', borderRadius: 10, border: '1px solid rgba(255,255,255,0.05)' }}>
+                  <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 700, display: 'block', marginBottom: '0.2rem' }}>📝 Tenyésztői Megjegyzések:</span>
+                  <p style={{ color: '#cbd5e1', fontSize: '0.85rem', margin: 0, whiteSpace: 'pre-wrap' }}>{activeGecko.notes}</p>
+                </div>
+              )}
+
 
               {/* Weight Log & Chart Section */}
               <div style={{
