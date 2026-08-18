@@ -24,18 +24,18 @@ export function buildMorphString(genetics: GeckoGenetics): string {
 
   if (genetics.hypo) parts.push('Hypo');
 
-  // Recessives
-  if (genetics.axanthic === 'visual') parts.push('Axanthic');
-  else if (genetics.axanthic === 'het') parts.push('Het Axanthic');
-
-
-  // Co-dominants & Dominants
+  // Dominants & Co-dominants
+  if (genetics.lillyWhite) parts.push('Lilly White');
   if (genetics.cappuccino === 'super') parts.push('Super Cappuccino (Translucent)');
   else if (genetics.cappuccino === 'visual') parts.push('Cappuccino');
 
-  if (genetics.lillyWhite) parts.push('Lilly White');
   if (genetics.phantom) parts.push('Phantom');
   if (genetics.sable) parts.push('Sable');
+
+  // Recessives
+  if (genetics.axanthic === 'visual') parts.push('Axanthic');
+  else if (genetics.axanthic === 'het') parts.push('100% Het Axanthic');
+
 
   // Structural & Patterns
   if (genetics.pattern === 'tricolor') parts.push('Tricolor');
