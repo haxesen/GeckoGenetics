@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useGeckoContext } from '../context/GeckoContext';
 import { calculateMorphOutcomes } from '../utils/genetics';
+import { getGeckoImage } from '../utils/imageHelper';
 import { 
   Sparkles, 
   Dna, 
@@ -10,6 +11,7 @@ import {
   Flame,
   CheckCircle2
 } from 'lucide-react';
+
 
 export const DashboardView: React.FC = () => {
   const { geckos, clutches, setActiveTab, setSelectedGeckoId } = useGeckoContext();
@@ -366,10 +368,11 @@ export const DashboardView: React.FC = () => {
             >
               <div style={{ height: 180, width: '100%', position: 'relative', overflow: 'hidden', background: '#1e293b' }}>
                 <img 
-                  src={gecko.mainImageUrl || 'https://images.unsplash.com/photo-1548767797-d8c844163c4c?auto=format&fit=crop&w=800&q=80'} 
+                  src={getGeckoImage(gecko)} 
                   alt={gecko.name}
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
+
                 <span className={`badge badge-gender-${gecko.gender}`} style={{ position: 'absolute', top: 12, right: 12 }}>
                   {gecko.gender === 'male' ? '♂ Hím' : gecko.gender === 'female' ? '♀ Nőstény' : '❓ Unsexed'}
                 </span>

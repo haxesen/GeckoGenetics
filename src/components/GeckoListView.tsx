@@ -4,7 +4,9 @@ import type { Gecko } from '../types/gecko';
 import { QRCodeSVG } from 'qrcode.react';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { EditGeckoModal } from './EditGeckoModal';
+import { getGeckoImage, DEFAULT_GECKO_IMAGE } from '../utils/imageHelper';
 import { 
+
   Search, 
   Plus, 
   Scale, 
@@ -141,10 +143,11 @@ export const GeckoListView: React.FC<{
                 {/* Image Header (4:3 Ratio) */}
                 <div style={{ aspectRatio: '4 / 3', position: 'relative', overflow: 'hidden', background: '#0f172a' }}>
                   <img 
-                    src={gecko.mainImageUrl || 'https://images.unsplash.com/photo-1548767797-d8c844163c4c?auto=format&fit=crop&w=800&q=80'}
+                    src={getGeckoImage(gecko)}
                     alt={gecko.name}
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   />
+
 
                   {/* Top Gradient Vignette for Badges */}
                   <div style={{
@@ -269,7 +272,8 @@ export const GeckoListView: React.FC<{
                     const geckoImages = activeGecko.images && activeGecko.images.length > 0
                       ? activeGecko.images
                       : (activeGecko.mainImageUrl ? [activeGecko.mainImageUrl] : []);
-                    const currentImg = geckoImages[activePhotoIdx] || geckoImages[0] || 'https://images.unsplash.com/photo-1548767797-d8c844163c4c?auto=format&fit=crop&w=800&q=80';
+                    const currentImg = geckoImages[activePhotoIdx] || geckoImages[0] || DEFAULT_GECKO_IMAGE;
+
 
                     return (
                       <>
