@@ -155,18 +155,17 @@ export const AddGeckoModal: React.FC<{
               background: 'rgba(15, 23, 42, 0.6)',
               border: '1px solid rgba(255, 255, 255, 0.08)',
               borderRadius: 10,
-              padding: '1rem'
+              padding: '1rem',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '1rem'
             }}>
-              <h4 style={{ fontSize: '0.9rem', fontWeight: 700, color: '#34d399', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#34d399', margin: 0, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                 <Dna size={16} /> Genetikai Értékek & Morph Beállítása
               </h4>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.85rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <input type="checkbox" checked={genetics.lillyWhite} onChange={e => setGenetics({ ...genetics, lillyWhite: e.target.checked })} style={{ accentColor: '#10b981' }} />
-                  <label className="form-label" style={{ margin: 0 }}>Lilly White (LW)</label>
-                </div>
-
+              {/* Base Morphs Grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.85rem' }}>
                 <div className="form-group" style={{ margin: 0 }}>
                   <label className="form-label">Axanthic:</label>
                   <select className="form-select" value={genetics.axanthic} onChange={e => setGenetics({ ...genetics, axanthic: e.target.value as any })}>
@@ -186,21 +185,101 @@ export const AddGeckoModal: React.FC<{
                 </div>
 
                 <div className="form-group" style={{ margin: 0 }}>
-                  <label className="form-label">Mintázat:</label>
+                  <label className="form-label">Alap Mintázat (Pattern):</label>
                   <select className="form-select" value={genetics.pattern} onChange={e => setGenetics({ ...genetics, pattern: e.target.value as any })}>
                     <option value="harlequin">Harlequin</option>
                     <option value="extreme_harlequin">Extreme Harlequin</option>
                     <option value="flame">Flame</option>
                     <option value="tricolor">Tricolor</option>
+                    <option value="bicolor">Bicolor</option>
                     <option value="patternless">Patternless</option>
                   </select>
                 </div>
               </div>
 
-              <div style={{ marginTop: '0.85rem', fontSize: '0.825rem', color: '#94a3b8' }}>
-                Számított Morph: <strong style={{ color: '#10b981' }}>{buildMorphString(genetics)}</strong>
+              {/* Pinstripe & Dalmatian */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.85rem' }}>
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label className="form-label" style={{ color: '#fbbf24', fontWeight: 700 }}>
+                    ⚡ Pinstripe (Csíkozottság):
+                  </label>
+                  <select className="form-select" value={genetics.pinstripe} onChange={e => setGenetics({ ...genetics, pinstripe: e.target.value as any })}>
+                    <option value="none">Nincs Pinstripe</option>
+                    <option value="low">Low Pinstripe (&lt;50%)</option>
+                    <option value="partial">Partial Pinstripe (50-99%)</option>
+                    <option value="full">Full Pinstripe (100%)</option>
+                    <option value="quadstripe">Quadstripe (Háti + Oldalsó csík)</option>
+                  </select>
+                </div>
+
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label className="form-label" style={{ color: '#c084fc', fontWeight: 700 }}>
+                    🐾 Dalmatian (Pettyezettség):
+                  </label>
+                  <select className="form-select" value={genetics.dalmatian} onChange={e => setGenetics({ ...genetics, dalmatian: e.target.value as any })}>
+                    <option value="none">Nincs Dalmatian petty</option>
+                    <option value="low">Dalmatian (Kevés petty)</option>
+                    <option value="high">High Spot Dalmatian (Sok petty)</option>
+                    <option value="super">Super Dalmatian (100+ petty)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Additional Genetic Traits Checkboxes */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+                gap: '0.75rem',
+                background: 'rgba(0, 0, 0, 0.25)',
+                padding: '0.75rem 1rem',
+                borderRadius: 8,
+                border: '1px solid rgba(255, 255, 255, 0.05)'
+              }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', fontSize: '0.85rem', color: '#f8fafc' }}>
+                  <input type="checkbox" checked={genetics.lillyWhite} onChange={e => setGenetics({ ...genetics, lillyWhite: e.target.checked })} style={{ accentColor: '#10b981' }} />
+                  <span>Lilly White</span>
+                </label>
+
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', fontSize: '0.85rem', color: '#f8fafc' }}>
+                  <input type="checkbox" checked={genetics.phantom} onChange={e => setGenetics({ ...genetics, phantom: e.target.checked })} style={{ accentColor: '#10b981' }} />
+                  <span>Phantom</span>
+                </label>
+
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', fontSize: '0.85rem', color: '#f8fafc' }}>
+                  <input type="checkbox" checked={genetics.sable} onChange={e => setGenetics({ ...genetics, sable: e.target.checked })} style={{ accentColor: '#10b981' }} />
+                  <span>Sable</span>
+                </label>
+
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', fontSize: '0.85rem', color: '#f8fafc' }}>
+                  <input type="checkbox" checked={genetics.whitewall} onChange={e => setGenetics({ ...genetics, whitewall: e.target.checked })} style={{ accentColor: '#10b981' }} />
+                  <span>Whitewall</span>
+                </label>
+
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', fontSize: '0.85rem', color: '#f8fafc' }}>
+                  <input type="checkbox" checked={genetics.inkSpot} onChange={e => setGenetics({ ...genetics, inkSpot: e.target.checked })} style={{ accentColor: '#10b981' }} />
+                  <span>Ink Spot</span>
+                </label>
+              </div>
+
+              {/* Calculated Live Morph Name */}
+              <div style={{
+                fontSize: '0.875rem',
+                color: '#94a3b8',
+                background: 'rgba(16, 185, 129, 0.1)',
+                border: '1px solid rgba(16, 185, 129, 0.25)',
+                padding: '0.65rem 0.85rem',
+                borderRadius: 8,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '0.5rem'
+              }}>
+                <span>✨ Számított Morph Megnevezés:</span>
+                <strong style={{ color: '#34d399', fontSize: '1rem' }}>{buildMorphString(genetics)}</strong>
               </div>
             </div>
+
 
             {/* Notes */}
             <div className="form-group" style={{ margin: 0 }}>

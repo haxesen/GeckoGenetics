@@ -7,11 +7,12 @@ export const DEFAULT_GENETICS: GeckoGenetics = {
   phantom: false,
   sable: false,
   pattern: 'harlequin',
-  pinstripe: 'partial',
+  pinstripe: 'none',
   dalmatian: 'none',
   whitewall: false,
   inkSpot: false
 };
+
 
 /**
  * Generates a human readable morph description string from genetics flags
