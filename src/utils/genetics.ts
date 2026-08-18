@@ -6,12 +6,13 @@ export const DEFAULT_GENETICS: GeckoGenetics = {
   cappuccino: 'none',
   phantom: false,
   sable: false,
-  pattern: 'harlequin',
+  pattern: 'patternless',
   pinstripe: 'none',
   dalmatian: 'none',
   whitewall: false,
   inkSpot: false
 };
+
 
 
 /**
