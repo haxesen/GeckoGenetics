@@ -145,21 +145,43 @@ export const GeckoListView: React.FC<{
               style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
             >
               <div>
-                {/* Image Header (4:3 Ratio) */}
+                {/* Image Header (4:3 Ratio) with Ambient Blur & Unclipped Contain View */}
                 <div 
                   onClick={(e) => {
                     e.stopPropagation();
                     setLightbox({ src: getGeckoImage(gecko), title: `${gecko.name} (${gecko.code})` });
                   }}
                   title="Nagyítás teljes képernyőn"
-                  style={{ aspectRatio: '4 / 3', position: 'relative', overflow: 'hidden', background: '#0f172a', cursor: 'pointer' }}
+                  style={{ aspectRatio: '4 / 3', position: 'relative', overflow: 'hidden', background: '#0b0f17', cursor: 'pointer' }}
                 >
+                  {/* Ambient Blurred Background for rich color fill */}
+                  <img 
+                    src={getGeckoImage(gecko)} 
+                    alt="" 
+                    aria-hidden="true"
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      filter: 'blur(18px) brightness(0.45)',
+                      transform: 'scale(1.2)'
+                    }} 
+                  />
+
+                  {/* Foreground Image - 100% Unclipped Full Gecko View */}
                   <img 
                     src={getGeckoImage(gecko)}
                     alt={gecko.name}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    style={{
+                      position: 'relative',
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'contain',
+                      zIndex: 1
+                    }}
                   />
-
 
                   {/* Top Gradient Vignette for Badges */}
                   <div style={{
@@ -168,17 +190,19 @@ export const GeckoListView: React.FC<{
                     left: 0,
                     right: 0,
                     height: 60,
-                    background: 'linear-gradient(180deg, rgba(0,0,0,0.55) 0%, transparent 100%)',
+                    background: 'linear-gradient(180deg, rgba(0,0,0,0.6) 0%, transparent 100%)',
+                    zIndex: 2,
                     pointerEvents: 'none'
                   }} />
 
-                  <span className={`badge badge-gender-${gecko.gender}`} style={{ position: 'absolute', top: 10, right: 10, zIndex: 2 }}>
+                  <span className={`badge badge-gender-${gecko.gender}`} style={{ position: 'absolute', top: 10, right: 10, zIndex: 3 }}>
                     {gecko.gender === 'male' ? '♂ Hím' : gecko.gender === 'female' ? '♀ Nőstény' : '❓ Unsexed'}
                   </span>
-                  <span className={`badge badge-status-${gecko.status}`} style={{ position: 'absolute', top: 10, left: 10, zIndex: 2 }}>
+                  <span className={`badge badge-status-${gecko.status}`} style={{ position: 'absolute', top: 10, left: 10, zIndex: 3 }}>
                     {gecko.status === 'breeder' ? 'Tenyész' : gecko.status === 'for_sale' ? 'Eladó' : gecko.status}
                   </span>
                 </div>
+
 
 
 

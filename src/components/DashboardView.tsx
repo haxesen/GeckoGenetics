@@ -366,31 +366,69 @@ export const DashboardView: React.FC = () => {
                 setActiveTab('geckos');
               }}
             >
-              <div style={{ height: 180, width: '100%', position: 'relative', overflow: 'hidden', background: '#1e293b' }}>
+              <div style={{ aspectRatio: '4 / 3', width: '100%', position: 'relative', overflow: 'hidden', background: '#0b0f17' }}>
+                {/* Ambient Blurred Background for rich color fill */}
+                <img 
+                  src={getGeckoImage(gecko)} 
+                  alt="" 
+                  aria-hidden="true"
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    filter: 'blur(18px) brightness(0.45)',
+                    transform: 'scale(1.2)'
+                  }} 
+                />
+
+                {/* Foreground Image - 100% Unclipped Full Gecko View */}
                 <img 
                   src={getGeckoImage(gecko)} 
                   alt={gecko.name}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  style={{
+                    position: 'relative',
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'contain',
+                    zIndex: 1
+                  }}
                 />
 
-                <span className={`badge badge-gender-${gecko.gender}`} style={{ position: 'absolute', top: 12, right: 12 }}>
+                {/* Top Vignette Gradient */}
+                <div style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: 50,
+                  background: 'linear-gradient(180deg, rgba(0,0,0,0.6) 0%, transparent 100%)',
+                  zIndex: 2,
+                  pointerEvents: 'none'
+                }} />
+
+                <span className={`badge badge-gender-${gecko.gender}`} style={{ position: 'absolute', top: 10, right: 10, zIndex: 3 }}>
                   {gecko.gender === 'male' ? '♂ Hím' : gecko.gender === 'female' ? '♀ Nőstény' : '❓ Unsexed'}
                 </span>
                 <span style={{
                   position: 'absolute',
-                  bottom: 12,
-                  left: 12,
+                  bottom: 10,
+                  left: 10,
+                  zIndex: 3,
                   background: 'rgba(0,0,0,0.75)',
                   backdropFilter: 'blur(8px)',
                   padding: '0.25rem 0.6rem',
                   borderRadius: 6,
                   fontSize: '0.75rem',
                   fontWeight: 700,
-                  color: '#34d399'
+                  color: '#34d399',
+                  border: '1px solid rgba(255,255,255,0.1)'
                 }}>
                   {gecko.code}
                 </span>
               </div>
+
 
               <div style={{ padding: '1.15rem' }}>
                 <h4 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#f8fafc', marginBottom: '0.3rem' }}>
