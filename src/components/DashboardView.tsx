@@ -9,7 +9,8 @@ import {
   ArrowRight,
   ShieldAlert,
   Flame,
-  CheckCircle2
+  CheckCircle2,
+  ChevronDown
 } from 'lucide-react';
 
 
@@ -26,6 +27,10 @@ export const DashboardView: React.FC = () => {
 
   const [selectedMaleId, setSelectedMaleId] = useState<string>(maleBreeders[0]?.id || '');
   const [selectedFemaleId, setSelectedFemaleId] = useState<string>(femaleBreeders[0]?.id || '');
+
+  // Collapsible panels state (default collapsed: false)
+  const [isPairingExpanded, setIsPairingExpanded] = useState<boolean>(false);
+  const [isIncubationExpanded, setIsIncubationExpanded] = useState<boolean>(false);
 
   const maleGecko = geckos.find(g => g.id === selectedMaleId);
   const femaleGecko = geckos.find(g => g.id === selectedFemaleId);
@@ -152,191 +157,243 @@ export const DashboardView: React.FC = () => {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '1.5rem' }}>
         
         {/* Quick Pair Morph Simulator */}
-        <div className="glass-card" style={{ padding: '1.75rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
+        <div className="glass-card" style={{ padding: '1.25rem 1.5rem', alignSelf: 'start', transition: 'all 0.3s ease' }}>
+          <div 
+            onClick={() => setIsPairingExpanded(prev => !prev)}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', userSelect: 'none' }}
+          >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
               <Dna color="#10b981" size={22} />
-              <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#f8fafc' }}>
+              <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#f8fafc', margin: 0 }}>
                 Gyors Párzási Szimulátor
               </h3>
             </div>
-            <button 
-              onClick={() => setActiveTab('calculator')}
-              className="btn btn-secondary btn-sm"
-            >
-              Részletes kalkulátor <ArrowRight size={14} />
-            </button>
-          </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.25rem' }}>
-            {/* Male selector */}
-            <div className="form-group">
-              <label className="form-label" style={{ color: '#38bdf8' }}>♂ APA (Hím tenyészállat)</label>
-              <select 
-                className="form-select"
-                value={selectedMaleId}
-                onChange={e => setSelectedMaleId(e.target.value)}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <button 
+                onClick={(e) => { e.stopPropagation(); setActiveTab('calculator'); }}
+                className="btn btn-secondary btn-sm"
               >
-                {maleBreeders.map(m => (
-                  <option key={m.id} value={m.id}>{m.name} ({m.morph})</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Female selector */}
-            <div className="form-group">
-              <label className="form-label" style={{ color: '#fb7185' }}>♀ ANYA (Nőstény tenyészállat)</label>
-              <select 
-                className="form-select"
-                value={selectedFemaleId}
-                onChange={e => setSelectedFemaleId(e.target.value)}
+                Részletes kalkulátor <ArrowRight size={14} />
+              </button>
+              <div 
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: '50%',
+                  background: 'rgba(255,255,255,0.06)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'transform 0.2s ease',
+                  transform: isPairingExpanded ? 'rotate(180deg)' : 'rotate(0deg)'
+                }}
               >
-                {femaleBreeders.map(f => (
-                  <option key={f.id} value={f.id}>{f.name} ({f.morph})</option>
-                ))}
-              </select>
+                <ChevronDown size={18} color="#94a3b8" />
+              </div>
             </div>
           </div>
 
-          {/* Lethal Warning Alert */}
-          {hasLethalWarning && (
-            <div style={{
-              background: 'rgba(244, 63, 94, 0.15)',
-              border: '1px solid rgba(244, 63, 94, 0.4)',
-              borderRadius: 10,
-              padding: '0.85rem 1rem',
-              marginBottom: '1.25rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.75rem',
-              color: '#fecdd3'
-            }}>
-              <ShieldAlert size={24} color="#f43f5e" style={{ flexShrink: 0 }} />
-              <div style={{ fontSize: '0.825rem' }}>
-                <strong style={{ color: '#f43f5e', display: 'block' }}>⚠️ FIGYELEM: LETÁLIS LILLY WHITE PÁROSÍTÁS!</strong>
-                Mindkét szülő Lilly White. A várt utódok 25%-a homozigóta Letális Super Lilly lesz!
+          {/* Collapsible Body */}
+          {isPairingExpanded && (
+            <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.25rem' }}>
+                {/* Male selector */}
+                <div className="form-group">
+                  <label className="form-label" style={{ color: '#38bdf8' }}>♂ APA (Hím tenyészállat)</label>
+                  <select 
+                    className="form-select"
+                    value={selectedMaleId}
+                    onChange={e => setSelectedMaleId(e.target.value)}
+                  >
+                    {maleBreeders.map(m => (
+                      <option key={m.id} value={m.id}>{m.name} ({m.morph})</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Female selector */}
+                <div className="form-group">
+                  <label className="form-label" style={{ color: '#fb7185' }}>♀ ANYA (Nőstény tenyészállat)</label>
+                  <select 
+                    className="form-select"
+                    value={selectedFemaleId}
+                    onChange={e => setSelectedFemaleId(e.target.value)}
+                  >
+                    {femaleBreeders.map(f => (
+                      <option key={f.id} value={f.id}>{f.name} ({f.morph})</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Lethal Warning Alert */}
+              {hasLethalWarning && (
+                <div style={{
+                  background: 'rgba(244, 63, 94, 0.15)',
+                  border: '1px solid rgba(244, 63, 94, 0.4)',
+                  borderRadius: 10,
+                  padding: '0.85rem 1rem',
+                  marginBottom: '1.25rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem',
+                  color: '#fecdd3'
+                }}>
+                  <ShieldAlert size={24} color="#f43f5e" style={{ flexShrink: 0 }} />
+                  <div style={{ fontSize: '0.825rem' }}>
+                    <strong style={{ color: '#f43f5e', display: 'block' }}>⚠️ FIGYELEM: LETÁLIS LILLY WHITE PÁROSÍTÁS!</strong>
+                    Mindkét szülő Lilly White. A várt utódok 25%-a homozigóta Letális Super Lilly lesz!
+                  </div>
+                </div>
+              )}
+
+              {/* Probability Outcomes List */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase' }}>
+                  VÁRHATÓ UTÓD MORPHOK SZÁZALÉKOSAN:
+                </span>
+
+                {outcomes.length === 0 ? (
+                  <p style={{ fontSize: '0.85rem', color: '#64748b' }}>Válassz ki egy apát és egy anyát a párosítás modellezéséhez.</p>
+                ) : (
+                  outcomes.map((item, idx) => (
+                    <div 
+                      key={idx}
+                      style={{
+                        background: item.isLethalWarning ? 'rgba(244, 63, 94, 0.1)' : 'rgba(255, 255, 255, 0.03)',
+                        border: `1px solid ${item.isLethalWarning ? 'rgba(244, 63, 94, 0.3)' : 'rgba(255, 255, 255, 0.06)'}`,
+                        borderRadius: 8,
+                        padding: '0.65rem 0.85rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between'
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <CheckCircle2 size={16} color={item.isRareCombination ? '#c084fc' : '#10b981'} />
+                        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: item.isLethalWarning ? '#f43f5e' : '#f8fafc' }}>
+                          {item.morphName}
+                        </span>
+                      </div>
+                      <span style={{
+                        fontWeight: 800,
+                        fontSize: '0.9rem',
+                        color: item.isLethalWarning ? '#f43f5e' : '#34d399',
+                        background: 'rgba(0,0,0,0.3)',
+                        padding: '0.2rem 0.5rem',
+                        borderRadius: 6
+                      }}>
+                        {item.probabilityPercent}%
+                      </span>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           )}
-
-          {/* Probability Outcomes List */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-            <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase' }}>
-              VÁRHATÓ UTÓD MORPHOK SZÁZALÉKOSAN:
-            </span>
-
-            {outcomes.length === 0 ? (
-              <p style={{ fontSize: '0.85rem', color: '#64748b' }}>Válassz ki egy apát és egy anyát a párosítás modellezéséhez.</p>
-            ) : (
-              outcomes.map((item, idx) => (
-                <div 
-                  key={idx}
-                  style={{
-                    background: item.isLethalWarning ? 'rgba(244, 63, 94, 0.1)' : 'rgba(255, 255, 255, 0.03)',
-                    border: `1px solid ${item.isLethalWarning ? 'rgba(244, 63, 94, 0.3)' : 'rgba(255, 255, 255, 0.06)'}`,
-                    borderRadius: 8,
-                    padding: '0.65rem 0.85rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between'
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <CheckCircle2 size={16} color={item.isRareCombination ? '#c084fc' : '#10b981'} />
-                    <span style={{ fontSize: '0.85rem', fontWeight: 600, color: item.isLethalWarning ? '#f43f5e' : '#f8fafc' }}>
-                      {item.morphName}
-                    </span>
-                  </div>
-                  <span style={{
-                    fontWeight: 800,
-                    fontSize: '0.9rem',
-                    color: item.isLethalWarning ? '#f43f5e' : '#34d399',
-                    background: 'rgba(0,0,0,0.3)',
-                    padding: '0.2rem 0.5rem',
-                    borderRadius: 6
-                  }}>
-                    {item.probabilityPercent}%
-                  </span>
-                </div>
-              ))
-            )}
-          </div>
         </div>
 
         {/* Active Incubating Clutches */}
-        <div className="glass-card" style={{ padding: '1.75rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
+        <div className="glass-card" style={{ padding: '1.25rem 1.5rem', alignSelf: 'start', transition: 'all 0.3s ease' }}>
+          <div 
+            onClick={() => setIsIncubationExpanded(prev => !prev)}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', userSelect: 'none' }}
+          >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
               <Egg color="#fbbf24" size={22} />
-              <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#f8fafc' }}>
+              <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#f8fafc', margin: 0 }}>
                 Inkubációs Visszaszámláló
               </h3>
             </div>
-            <button 
-              onClick={() => setActiveTab('clutches')}
-              className="btn btn-secondary btn-sm"
-            >
-              Fészekalj napló <ArrowRight size={14} />
-            </button>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <button 
+                onClick={(e) => { e.stopPropagation(); setActiveTab('clutches'); }}
+                className="btn btn-secondary btn-sm"
+              >
+                Fészekalj napló <ArrowRight size={14} />
+              </button>
+              <div 
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: '50%',
+                  background: 'rgba(255,255,255,0.06)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'transform 0.2s ease',
+                  transform: isIncubationExpanded ? 'rotate(180deg)' : 'rotate(0deg)'
+                }}
+              >
+                <ChevronDown size={18} color="#94a3b8" />
+              </div>
+            </div>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {activeClutches.length === 0 ? (
-              <p style={{ color: '#64748b', fontSize: '0.9rem' }}>Jelenleg nincs aktív tojás az inkubátorban.</p>
-            ) : (
-              activeClutches.map(c => (
-                <div 
-                  key={c.id}
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.03)',
-                    border: '1px solid rgba(245, 158, 11, 0.25)',
-                    borderRadius: 12,
-                    padding: '1rem',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '0.5rem'
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontWeight: 700, color: '#f8fafc', fontSize: '0.95rem' }}>
-                      🥚 {c.motherName || 'Nőstény'} × {c.fatherName || 'Hím'}
-                    </span>
-                    <span style={{
-                      fontSize: '0.75rem',
-                      fontWeight: 700,
-                      color: '#fbbf24',
-                      background: 'rgba(245, 158, 11, 0.15)',
-                      padding: '0.2rem 0.55rem',
-                      borderRadius: 12
-                    }}>
-                      {c.eggCount} db tojás ({c.incubationTempC} °C)
-                    </span>
-                  </div>
+          {/* Collapsible Body */}
+          {isIncubationExpanded && (
+            <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {activeClutches.length === 0 ? (
+                  <p style={{ color: '#64748b', fontSize: '0.9rem' }}>Jelenleg nincs aktív tojás az inkubátorban.</p>
+                ) : (
+                  activeClutches.map(c => (
+                    <div 
+                      key={c.id}
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.03)',
+                        border: '1px solid rgba(245, 158, 11, 0.25)',
+                        borderRadius: 12,
+                        padding: '1rem',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '0.5rem'
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontWeight: 700, color: '#f8fafc', fontSize: '0.95rem' }}>
+                          🥚 {c.motherName || 'Nőstény'} × {c.fatherName || 'Hím'}
+                        </span>
+                        <span style={{
+                          fontSize: '0.75rem',
+                          fontWeight: 700,
+                          color: '#fbbf24',
+                          background: 'rgba(245, 158, 11, 0.15)',
+                          padding: '0.2rem 0.55rem',
+                          borderRadius: 12
+                        }}>
+                          {c.eggCount} db tojás ({c.incubationTempC} °C)
+                        </span>
+                      </div>
 
-                  <div style={{ fontSize: '0.8rem', color: '#94a3b8', display: 'flex', gap: '1rem' }}>
-                    <span>Tojásrakás: {c.laidDate}</span>
-                    <span>Várható kikelés: <strong style={{ color: '#38bdf8' }}>{c.expectedHatchDate}</strong></span>
-                  </div>
+                      <div style={{ fontSize: '0.8rem', color: '#94a3b8', display: 'flex', gap: '1rem' }}>
+                        <span>Tojásrakás: {c.laidDate}</span>
+                        <span>Várható kikelés: <strong style={{ color: '#38bdf8' }}>{c.expectedHatchDate}</strong></span>
+                      </div>
 
-                  <div style={{
-                    width: '100%',
-                    height: 6,
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    borderRadius: 3,
-                    marginTop: '0.4rem',
-                    overflow: 'hidden'
-                  }}>
-                    <div style={{
-                      width: '75%',
-                      height: '100%',
-                      background: 'linear-gradient(90deg, #f59e0b, #10b981)',
-                      borderRadius: 3
-                    }} />
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
+                      <div style={{
+                        width: '100%',
+                        height: 6,
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        borderRadius: 3,
+                        marginTop: '0.4rem',
+                        overflow: 'hidden'
+                      }}>
+                        <div style={{
+                          width: '75%',
+                          height: '100%',
+                          background: 'linear-gradient(90deg, #f59e0b, #10b981)',
+                          borderRadius: 3
+                        }} />
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
