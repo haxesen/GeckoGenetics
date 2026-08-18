@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Crop, ZoomIn, ZoomOut, RotateCw, Check, X } from 'lucide-react';
+import { Crop, ZoomIn, ZoomOut, RotateCw, Check, X, Maximize } from 'lucide-react';
 
 interface ImageCropModalProps {
   imageSrc: string | null;
@@ -102,6 +102,12 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
     setIsDragging(false);
   };
 
+  const handleUseFullImage = () => {
+    if (!imageSrc) return;
+    onCropComplete(imageSrc);
+    onClose();
+  };
+
   const handleCrop = () => {
     const canvas = canvasRef.current;
     if (!canvas || !imageRef.current) return;
@@ -143,7 +149,7 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
 
   return (
     <div className="modal-overlay" style={{ zIndex: 1100 }}>
-      <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: 520, textAlign: 'center' }}>
+      <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: 540, textAlign: 'center' }}>
         <div className="modal-header">
           <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <Crop color="#10b981" size={20} /> Kép Kivágása & Pozicionálása
@@ -252,9 +258,12 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
           </div>
         </div>
 
-        <div className="modal-footer">
+        <div className="modal-footer" style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
           <button type="button" onClick={handleCrop} className="btn btn-primary">
             <Check size={16} /> Kivágás & Alkalmazás
+          </button>
+          <button type="button" onClick={handleUseFullImage} className="btn btn-secondary" style={{ color: '#38bdf8' }}>
+            <Maximize size={16} /> Teljes Kép Használata (Kivágás Nélkül)
           </button>
           <button type="button" onClick={onClose} className="btn btn-secondary">
             Mégse
@@ -264,3 +273,4 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
     </div>
   );
 };
+
