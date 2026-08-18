@@ -364,64 +364,89 @@ export const GeckoListView: React.FC<{
                       <strong style={{ color: '#cbd5e1' }}>{new Date(activeGecko.createdAt).toLocaleDateString('hu-HU')}</strong>
                     </div>
                   </div>
-
-                  {/* Parents Quick Section */}
-                  {(() => {
-                    const fGecko = activeGecko.fatherId ? geckos.find(g => g.id === activeGecko.fatherId) : null;
-                    const mGecko = activeGecko.motherId ? geckos.find(g => g.id === activeGecko.motherId) : null;
-                    const fName = fGecko ? fGecko.name : (activeGecko.fatherName || null);
-                    const mName = mGecko ? mGecko.name : (activeGecko.motherName || null);
-                    const fPic = fGecko?.mainImageUrl || activeGecko.fatherImageUrl;
-                    const mPic = mGecko?.mainImageUrl || activeGecko.motherImageUrl;
-
-                    if (!fName && !mName) return null;
-
-                    return (
-                      <div style={{
-                        background: 'rgba(0,0,0,0.3)',
-                        border: '1px solid rgba(255,255,255,0.06)',
-                        padding: '0.65rem 0.85rem',
-                        borderRadius: 10,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '0.4rem'
-                      }}>
-                        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#38bdf8' }}>🧬 Szülők & Családfa:</span>
-                        <div style={{ display: 'flex', gap: '1.25rem', flexWrap: 'wrap' }}>
-                          {fName && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                              {fPic ? (
-                                <img src={fPic} alt="Apa" style={{ width: 32, height: 32, borderRadius: 6, objectFit: 'cover', border: '1px solid #38bdf8' }} />
-                              ) : (
-                                <span style={{ fontSize: '0.85rem' }}>♂</span>
-                              )}
-                              <div>
-                                <span style={{ fontSize: '0.7rem', color: '#94a3b8', display: 'block' }}>APA</span>
-                                <strong style={{ fontSize: '0.825rem', color: '#38bdf8' }}>{fName}</strong>
-                              </div>
-                            </div>
-                          )}
-                          {mName && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                              {mPic ? (
-                                <img src={mPic} alt="Anya" style={{ width: 32, height: 32, borderRadius: 6, objectFit: 'cover', border: '1px solid #fb7185' }} />
-                              ) : (
-                                <span style={{ fontSize: '0.85rem' }}>♀</span>
-                              )}
-                              <div>
-                                <span style={{ fontSize: '0.7rem', color: '#94a3b8', display: 'block' }}>ANYA</span>
-                                <strong style={{ fontSize: '0.825rem', color: '#fb7185' }}>{mName}</strong>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })()}
                 </div>
               </div>
 
+              {/* Dedicated Parents & Lineage Photos Section */}
+              {(() => {
+                const fGecko = activeGecko.fatherId ? geckos.find(g => g.id === activeGecko.fatherId) : null;
+                const mGecko = activeGecko.motherId ? geckos.find(g => g.id === activeGecko.motherId) : null;
+                const fName = fGecko ? fGecko.name : (activeGecko.fatherName || null);
+                const mName = mGecko ? mGecko.name : (activeGecko.motherName || null);
+                const fPic = (fGecko?.mainImageUrl || (fGecko?.images && fGecko?.images[0])) || activeGecko.fatherImageUrl;
+                const mPic = (mGecko?.mainImageUrl || (mGecko?.images && mGecko?.images[0])) || activeGecko.motherImageUrl;
+
+                if (!fName && !mName && !fPic && !mPic) return null;
+
+                return (
+                  <div style={{
+                    background: 'rgba(0,0,0,0.25)',
+                    border: '1px solid rgba(255,255,255,0.06)',
+                    borderRadius: 10,
+                    padding: '0.85rem 1rem'
+                  }}>
+                    <h5 style={{ fontSize: '0.8rem', color: '#38bdf8', fontWeight: 700, margin: '0 0 0.65rem 0', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                      🧬 Szülők & Családfa Fotók
+                    </h5>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                      {/* Father Card */}
+                      <div style={{
+                        background: 'rgba(15, 23, 42, 0.6)',
+                        border: '1px solid rgba(56, 189, 248, 0.2)',
+                        borderRadius: 8,
+                        padding: '0.65rem 0.85rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.75rem'
+                      }}>
+                        <img 
+                          src={fPic || DEFAULT_GECKO_IMAGE} 
+                          alt="Apa" 
+                          style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'cover', border: '1px solid #38bdf8', flexShrink: 0 }} 
+                        />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#38bdf8', display: 'block' }}>♂ APA (Sire)</span>
+                          <strong style={{ fontSize: '0.9rem', color: '#f8fafc', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block' }}>
+                            {fName || 'Ismeretlen Apa'}
+                          </strong>
+                          <span style={{ fontSize: '0.75rem', color: '#34d399', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block' }}>
+                            {fGecko ? fGecko.morph : 'Külső szülővonal'}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Mother Card */}
+                      <div style={{
+                        background: 'rgba(15, 23, 42, 0.6)',
+                        border: '1px solid rgba(251, 113, 133, 0.2)',
+                        borderRadius: 8,
+                        padding: '0.65rem 0.85rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.75rem'
+                      }}>
+                        <img 
+                          src={mPic || DEFAULT_GECKO_IMAGE} 
+                          alt="Anya" 
+                          style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'cover', border: '1px solid #fb7185', flexShrink: 0 }} 
+                        />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#fb7185', display: 'block' }}>♀ ANYA (Dam)</span>
+                          <strong style={{ fontSize: '0.9rem', color: '#f8fafc', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block' }}>
+                            {mName || 'Ismeretlen Anya'}
+                          </strong>
+                          <span style={{ fontSize: '0.75rem', color: '#34d399', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block' }}>
+                            {mGecko ? mGecko.morph : 'Külső szülővonal'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
               {/* Genetics Badges Summary */}
+
               {activeGecko.genetics && (
                 <div style={{
                   background: 'rgba(0,0,0,0.25)',
