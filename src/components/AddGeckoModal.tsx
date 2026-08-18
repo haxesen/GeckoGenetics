@@ -485,9 +485,15 @@ export const AddGeckoModal: React.FC<{
                 border: '1px solid rgba(255, 255, 255, 0.05)'
               }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', fontSize: '0.85rem', color: '#f8fafc' }}>
+                  <input type="checkbox" checked={!!genetics.hypo} onChange={e => setGenetics({ ...genetics, hypo: e.target.checked })} style={{ accentColor: '#10b981' }} />
+                  <span>Hypo</span>
+                </label>
+
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', fontSize: '0.85rem', color: '#f8fafc' }}>
                   <input type="checkbox" checked={genetics.lillyWhite} onChange={e => setGenetics({ ...genetics, lillyWhite: e.target.checked })} style={{ accentColor: '#10b981' }} />
                   <span>Lilly White</span>
                 </label>
+
 
                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', fontSize: '0.85rem', color: '#f8fafc' }}>
                   <input type="checkbox" checked={genetics.phantom} onChange={e => setGenetics({ ...genetics, phantom: e.target.checked })} style={{ accentColor: '#10b981' }} />

@@ -14,6 +14,7 @@ export interface GeckoGenetics {
   cappuccino: 'super' | 'visual' | 'none'; // Co-domináns (Super Cap translucent)
   phantom: boolean;            // Phantom
   sable: boolean;              // Sable
+  hypo?: boolean;              // Hypomelanistic
   // Poligénes / mintázat tulajdonságok
   pattern: 'patternless' | 'bicolor' | 'flame' | 'harlequin' | 'extreme_harlequin' | 'tricolor';
   pinstripe: 'none' | 'low' | 'partial' | 'full' | 'quadstripe';
@@ -21,6 +22,7 @@ export interface GeckoGenetics {
   whitewall: boolean;
   inkSpot: boolean;
 }
+
 
 export interface Gecko {
   id: string;

@@ -6,6 +6,7 @@ export const DEFAULT_GENETICS: GeckoGenetics = {
   cappuccino: 'none',
   phantom: false,
   sable: false,
+  hypo: false,
   pattern: 'patternless',
   pinstripe: 'none',
   dalmatian: 'none',
@@ -21,9 +22,12 @@ export const DEFAULT_GENETICS: GeckoGenetics = {
 export function buildMorphString(genetics: GeckoGenetics): string {
   const parts: string[] = [];
 
+  if (genetics.hypo) parts.push('Hypo');
+
   // Recessives
   if (genetics.axanthic === 'visual') parts.push('Axanthic');
   else if (genetics.axanthic === 'het') parts.push('Het Axanthic');
+
 
   // Co-dominants & Dominants
   if (genetics.cappuccino === 'super') parts.push('Super Cappuccino (Translucent)');
