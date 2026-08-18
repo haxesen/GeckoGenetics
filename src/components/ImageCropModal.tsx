@@ -50,6 +50,12 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
     }
   }, [zoom, rotation, position, aspectRatio]);
 
+  const getFitScale = (img: HTMLImageElement) => {
+    if (!img.width || !img.height) return 1;
+    // Base scale to make 100% of the image cover/fit the crop box
+    return Math.max(cropW / img.width, cropH / img.height);
+  };
+
   const drawCanvas = (
     img: HTMLImageElement,
     currentZoom: number,
@@ -61,14 +67,18 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Clear canvas
-    ctx.clearRect(0, 0, cropW, cropH);
+    // Clear canvas with dark background
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(0, 0, cropW, cropH);
+
+    const fitScale = getFitScale(img);
+    const effectiveZoom = fitScale * currentZoom;
 
     ctx.save();
     // Move to center
     ctx.translate(cropW / 2 + currentPos.x, cropH / 2 + currentPos.y);
     ctx.rotate((currentRotation * Math.PI) / 180);
-    ctx.scale(currentZoom, currentZoom);
+    ctx.scale(effectiveZoom, effectiveZoom);
 
     // Draw image centered
     ctx.drawImage(img, -img.width / 2, -img.height / 2);
@@ -96,6 +106,10 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
     const canvas = canvasRef.current;
     if (!canvas || !imageRef.current) return;
 
+    const img = imageRef.current;
+    const fitScale = getFitScale(img);
+    const effectiveZoom = fitScale * zoom;
+
     // Create high-res output canvas
     const outputCanvas = document.createElement('canvas');
     const outW = 800;
@@ -109,16 +123,18 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
 
     const scaleFactor = outW / cropW;
 
+    outCtx.fillStyle = '#0f172a';
+    outCtx.fillRect(0, 0, outW, outH);
+
     outCtx.save();
     outCtx.scale(scaleFactor, scaleFactor);
-    outCtx.translate(cropW / 2, cropH / 2);
-    outCtx.translate(position.x, position.y);
+    outCtx.translate(cropW / 2 + position.x, cropH / 2 + position.y);
     outCtx.rotate((rotation * Math.PI) / 180);
-    outCtx.scale(zoom, zoom);
-    outCtx.drawImage(imageRef.current, -imageRef.current.width / 2, -imageRef.current.height / 2);
+    outCtx.scale(effectiveZoom, effectiveZoom);
+    outCtx.drawImage(img, -img.width / 2, -img.height / 2);
     outCtx.restore();
 
-    const croppedDataUrl = outputCanvas.toDataURL('image/webp', 0.85);
+    const croppedDataUrl = outputCanvas.toDataURL('image/webp', 0.9);
     onCropComplete(croppedDataUrl);
     onClose();
   };
@@ -144,7 +160,7 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
               className={`btn btn-sm ${aspectRatio === '4:3' ? 'btn-primary' : 'btn-secondary'}`}
               style={{ fontSize: '0.75rem', padding: '0.2rem 0.6rem' }}
             >
-              4:3 (Kártya méret - Ajánlott)
+              4:3 (Kártya méret — Ajánlott)
             </button>
             <button
               type="button"
@@ -214,9 +230,9 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
               <ZoomOut size={16} color="#94a3b8" />
               <input 
                 type="range" 
-                min="0.5" 
+                min="0.2" 
                 max="3" 
-                step="0.05" 
+                step="0.02" 
                 value={zoom} 
                 onChange={e => setZoom(parseFloat(e.target.value))} 
                 style={{ flex: 1, accentColor: '#10b981', cursor: 'pointer' }} 
