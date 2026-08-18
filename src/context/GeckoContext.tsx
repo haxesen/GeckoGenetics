@@ -65,7 +65,8 @@ export const GeckoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               motherName: row.mother_name,
               weightGrams: row.weight_grams,
               notes: row.notes,
-              mainImageUrl: row.main_image_url,
+              mainImageUrl: row.main_image_url || (row.images && row.images[0]) || undefined,
+              images: row.images || (row.main_image_url ? [row.main_image_url] : []),
               createdAt: row.created_at
             }));
             setGeckos(mappedGeckos);
@@ -189,7 +190,8 @@ export const GeckoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           mother_name: newGecko.motherName,
           weight_grams: newGecko.weightGrams,
           notes: newGecko.notes,
-          main_image_url: newGecko.mainImageUrl
+          main_image_url: newGecko.mainImageUrl || (newGecko.images && newGecko.images[0]) || null,
+          images: newGecko.images || (newGecko.mainImageUrl ? [newGecko.mainImageUrl] : [])
         });
       } catch (err) {
         console.error('Supabase insert error:', err);
@@ -202,17 +204,29 @@ export const GeckoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     if (isSupabaseConfigured && supabase) {
       try {
-        await supabase.from('cg_geckos').update({
-          name: updates.name,
-          code: updates.code,
-          gender: updates.gender,
-          morph: updates.morph,
-          status: updates.status,
-          weight_grams: updates.weightGrams,
-          notes: updates.notes,
-          breeder_name: updates.breederName,
-          main_image_url: updates.mainImageUrl
-        }).eq('id', id);
+        const payload: any = {};
+        if (updates.name !== undefined) payload.name = updates.name;
+        if (updates.code !== undefined) payload.code = updates.code;
+        if (updates.gender !== undefined) payload.gender = updates.gender;
+        if (updates.hatchDate !== undefined) payload.hatch_date = updates.hatchDate;
+        if (updates.morph !== undefined) payload.morph = updates.morph;
+        if (updates.genetics !== undefined) payload.genetics = updates.genetics;
+        if (updates.breederName !== undefined) payload.breeder_name = updates.breederName;
+        if (updates.purchasePrice !== undefined) payload.purchase_price = updates.purchasePrice;
+        if (updates.status !== undefined) payload.status = updates.status;
+        if (updates.fatherId !== undefined) payload.father_id = updates.fatherId;
+        if (updates.motherId !== undefined) payload.mother_id = updates.motherId;
+        if (updates.weightGrams !== undefined) payload.weight_grams = updates.weightGrams;
+        if (updates.notes !== undefined) payload.notes = updates.notes;
+        if (updates.mainImageUrl !== undefined) payload.main_image_url = updates.mainImageUrl;
+        if (updates.images !== undefined) {
+          payload.images = updates.images;
+          if (updates.images.length > 0) {
+            payload.main_image_url = updates.images[0];
+          }
+        }
+
+        await supabase.from('cg_geckos').update(payload).eq('id', id);
       } catch (err) {
         console.error('Supabase update error:', err);
       }

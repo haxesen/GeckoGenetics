@@ -116,10 +116,11 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
     outCtx.drawImage(imageRef.current, -imageRef.current.width / 2, -imageRef.current.height / 2);
     outCtx.restore();
 
-    const croppedDataUrl = outputCanvas.toDataURL('image/jpeg', 0.88);
+    const croppedDataUrl = outputCanvas.toDataURL('image/webp', 0.82);
     onCropComplete(croppedDataUrl);
     onClose();
   };
+
 
   if (!isOpen || !imageSrc) return null;
 

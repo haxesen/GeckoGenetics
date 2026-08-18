@@ -28,9 +28,11 @@ export const GeckoListView: React.FC<{
 
   // Selected gecko for profile modal & editing modal
   const [activeGecko, setActiveGecko] = useState<Gecko | null>(null);
+  const [activePhotoIdx, setActivePhotoIdx] = useState<number>(0);
   const [editingGecko, setEditingGecko] = useState<Gecko | null>(null);
   const [showQrModal, setShowQrModal] = useState<Gecko | null>(null);
   const [newWeightInput, setNewWeightInput] = useState<string>('');
+
 
   // Filtering
   const filteredGeckos = geckos.filter(g => {
@@ -247,13 +249,48 @@ export const GeckoListView: React.FC<{
             </div>
 
             <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-              {/* Profile Top Summary */}
+              {/* Profile Top Summary & Image Gallery */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1.5rem' }}>
-                <img 
-                  src={activeGecko.mainImageUrl || 'https://images.unsplash.com/photo-1548767797-d8c844163c4c?auto=format&fit=crop&w=800&q=80'}
-                  alt={activeGecko.name}
-                  style={{ width: '100%', height: 200, objectFit: 'cover', borderRadius: 12, border: '1px solid rgba(255,255,255,0.1)' }}
-                />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  {(() => {
+                    const geckoImages = activeGecko.images && activeGecko.images.length > 0
+                      ? activeGecko.images
+                      : (activeGecko.mainImageUrl ? [activeGecko.mainImageUrl] : []);
+                    const currentImg = geckoImages[activePhotoIdx] || geckoImages[0] || 'https://images.unsplash.com/photo-1548767797-d8c844163c4c?auto=format&fit=crop&w=800&q=80';
+
+                    return (
+                      <>
+                        <img 
+                          src={currentImg}
+                          alt={activeGecko.name}
+                          style={{ width: '100%', height: 190, objectFit: 'cover', borderRadius: 12, border: '1px solid rgba(255,255,255,0.1)' }}
+                        />
+                        {geckoImages.length > 1 && (
+                          <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
+                            {geckoImages.map((img, i) => (
+                              <img
+                                key={i}
+                                src={img}
+                                alt={`Foto ${i + 1}`}
+                                onClick={() => setActivePhotoIdx(i)}
+                                style={{
+                                  width: 44,
+                                  height: 44,
+                                  borderRadius: 6,
+                                  objectFit: 'cover',
+                                  cursor: 'pointer',
+                                  border: activePhotoIdx === i ? '2px solid #10b981' : '1px solid rgba(255,255,255,0.15)',
+                                  opacity: activePhotoIdx === i ? 1 : 0.6
+                                }}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
+                </div>
+
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                   <h4 style={{ color: '#10b981', fontSize: '1.15rem', fontWeight: 700 }}>{activeGecko.morph}</h4>

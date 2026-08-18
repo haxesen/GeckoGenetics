@@ -61,8 +61,10 @@ export const AddGeckoModal: React.FC<{
   const [motherId, setMotherId] = useState<string>('');
   const [weightGrams, setWeightGrams] = useState<string>('');
   const [notes, setNotes] = useState('');
-  const [mainImageUrl, setMainImageUrl] = useState('');
+  const [images, setImages] = useState<string[]>([]);
+  const [cropIndex, setCropIndex] = useState<number>(0);
   const [imageMode, setImageMode] = useState<'upload' | 'url'>('upload');
+  const [urlInput, setUrlInput] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [rawImageSrc, setRawImageSrc] = useState<string | null>(null);
   const [isCropOpen, setIsCropOpen] = useState(false);
@@ -72,7 +74,7 @@ export const AddGeckoModal: React.FC<{
 
   if (!isOpen) return null;
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, targetIndex?: number) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -80,6 +82,7 @@ export const AddGeckoModal: React.FC<{
       setIsUploading(true);
       const dataUrl = await compressImage(file);
       setRawImageSrc(dataUrl);
+      setCropIndex(targetIndex !== undefined ? targetIndex : images.length);
       setIsCropOpen(true);
     } catch (err) {
       console.error('Kép feldolgozási hiba:', err);
@@ -88,7 +91,24 @@ export const AddGeckoModal: React.FC<{
     }
   };
 
+  const handleAddUrl = () => {
+    if (!urlInput.trim() || images.length >= 3) return;
+    setImages(prev => [...prev, urlInput.trim()]);
+    setUrlInput('');
+  };
 
+  const handleRemoveImage = (index: number) => {
+    setImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleSetMainImage = (index: number) => {
+    if (index === 0) return;
+    setImages(prev => {
+      const copy = [...prev];
+      const selected = copy.splice(index, 1)[0];
+      return [selected, ...copy];
+    });
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,11 +130,13 @@ export const AddGeckoModal: React.FC<{
       motherId: motherId || undefined,
       weightGrams: weightGrams ? parseFloat(weightGrams) : undefined,
       notes: notes.trim() || undefined,
-      mainImageUrl: mainImageUrl.trim() || undefined
+      mainImageUrl: images[0] || undefined,
+      images: images
     });
 
     onClose();
   };
+
 
   const maleGeckos = geckos.filter(g => g.gender === 'male');
   const femaleGeckos = geckos.filter(g => g.gender === 'female');
@@ -200,11 +222,14 @@ export const AddGeckoModal: React.FC<{
               </div>
             </div>
 
-            {/* Image Upload / URL & Hatch Date */}
+            {/* Max 3 WebP Images Upload & Hatch Date */}
             <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1rem', alignItems: 'flex-start' }}>
               <div className="form-group" style={{ margin: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
-                  <label className="form-label" style={{ margin: 0 }}>Gekkó Fotó (Főkép)</label>
+                  <label className="form-label" style={{ margin: 0 }}>
+                    Gekkó Fotók (Max 3 db WebP fotó) — <span style={{ color: '#34d399' }}>{images.length}/3 feltöltve</span>
+                  </label>
+
                   <div style={{ display: 'flex', gap: '0.25rem', background: 'rgba(0,0,0,0.3)', padding: 2, borderRadius: 6 }}>
                     <button
                       type="button"
@@ -248,7 +273,7 @@ export const AddGeckoModal: React.FC<{
                 </div>
 
                 {imageMode === 'upload' ? (
-                  <div>
+                  images.length < 3 && (
                     <label 
                       style={{
                         border: '2px dashed rgba(16, 185, 129, 0.4)',
@@ -263,70 +288,91 @@ export const AddGeckoModal: React.FC<{
                         color: '#34d399',
                         fontSize: '0.85rem',
                         fontWeight: 600,
-                        transition: 'all 0.2s ease'
+                        marginBottom: '0.75rem'
                       }}
                     >
                       <Upload size={18} />
-                      {isUploading ? 'Feldolgozás...' : 'Kép Kiválasztása (Fájl tallózása)'}
+                      {isUploading ? 'Feldolgozás...' : `+ Kép Hozzáadása (${3 - images.length} hely maradt, Auto-WebP)`}
                       <input 
                         type="file" 
                         accept="image/*" 
-                        onChange={handleFileUpload} 
+                        onChange={e => handleFileUpload(e)} 
                         style={{ display: 'none' }} 
                       />
                     </label>
-                  </div>
+                  )
                 ) : (
-                  <input 
-                    type="url" 
-                    className="form-input" 
-                    placeholder="https://images.unsplash.com/..." 
-                    value={mainImageUrl} 
-                    onChange={e => setMainImageUrl(e.target.value)} 
-                  />
+                  images.length < 3 && (
+                    <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                      <input 
+                        type="url" 
+                        className="form-input" 
+                        placeholder="https://..." 
+                        value={urlInput} 
+                        onChange={e => setUrlInput(e.target.value)} 
+                      />
+                      <button type="button" onClick={handleAddUrl} className="btn btn-secondary btn-sm">Hozzáadás</button>
+                    </div>
+                  )
                 )}
 
-                {/* Preview Box if mainImageUrl is set */}
-                {mainImageUrl && (
-                  <div style={{
-                    marginTop: '0.5rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.75rem',
-                    background: 'rgba(0,0,0,0.3)',
-                    padding: '0.5rem',
-                    borderRadius: 8,
-                    border: '1px solid rgba(255,255,255,0.08)'
-                  }}>
-                    <img 
-                      src={mainImageUrl} 
-                      alt="Preview" 
-                      style={{ width: 44, height: 44, borderRadius: 6, objectFit: 'cover' }} 
-                    />
-                    <span style={{ fontSize: '0.8rem', color: '#34d399', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      ✓ Kép csatolva
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setRawImageSrc(mainImageUrl);
-                        setIsCropOpen(true);
+                {/* 3-Slot Thumbnail Gallery List */}
+                <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+                  {images.map((imgUrl, idx) => (
+                    <div 
+                      key={idx} 
+                      style={{
+                        position: 'relative',
+                        width: 80,
+                        height: 80,
+                        borderRadius: 8,
+                        overflow: 'hidden',
+                        border: idx === 0 ? '2px solid #10b981' : '1px solid rgba(255,255,255,0.1)',
+                        background: '#0f172a'
                       }}
-                      className="btn btn-secondary btn-sm"
-                      style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
                     >
-                      <Crop size={12} /> Kivágás
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setMainImageUrl('')}
-                      className="btn btn-secondary btn-sm"
-                      style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem', color: '#f43f5e' }}
-                    >
-                      ✕ Törlés
-                    </button>
-                  </div>
-                )}
+                      <img src={imgUrl} alt={`Foto ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      
+                      {idx === 0 ? (
+                        <span style={{ position: 'absolute', top: 2, left: 2, background: '#10b981', color: '#fff', fontSize: '0.6rem', fontWeight: 800, padding: '0.1rem 0.3rem', borderRadius: 4 }}>
+                          FŐKÉP
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handleSetMainImage(idx)}
+                          title="Beállítás főképpé"
+                          style={{ position: 'absolute', top: 2, left: 2, background: 'rgba(0,0,0,0.6)', color: '#fbbf24', border: 'none', fontSize: '0.6rem', padding: '0.1rem 0.3rem', borderRadius: 4, cursor: 'pointer' }}
+                        >
+                          ★ Főképpé
+                        </button>
+                      )}
+
+                      <div style={{ position: 'absolute', bottom: 2, right: 2, display: 'flex', gap: 2 }}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setRawImageSrc(imgUrl);
+                            setCropIndex(idx);
+                            setIsCropOpen(true);
+                          }}
+                          style={{ background: 'rgba(0,0,0,0.7)', color: '#38bdf8', border: 'none', borderRadius: 3, padding: '0.15rem 0.3rem', cursor: 'pointer' }}
+                          title="Újravágás"
+                        >
+                          <Crop size={10} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveImage(idx)}
+                          style={{ background: 'rgba(0,0,0,0.7)', color: '#f43f5e', border: 'none', borderRadius: 3, padding: '0.15rem 0.3rem', cursor: 'pointer' }}
+                          title="Törlés"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               <div className="form-group" style={{ margin: 0 }}>
@@ -337,14 +383,19 @@ export const AddGeckoModal: React.FC<{
 
             {/* Image Crop Modal */}
             <ImageCropModal
-              imageSrc={rawImageSrc || mainImageUrl}
+              imageSrc={rawImageSrc}
               isOpen={isCropOpen}
               onClose={() => setIsCropOpen(false)}
               onCropComplete={(croppedUrl) => {
-                setMainImageUrl(croppedUrl);
+                setImages(prev => {
+                  const updated = [...prev];
+                  updated[cropIndex] = croppedUrl;
+                  return updated.slice(0, 3);
+                });
                 setIsCropOpen(false);
               }}
             />
+
 
 
 
