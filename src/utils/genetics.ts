@@ -39,7 +39,6 @@ export function buildMorphString(genetics: GeckoGenetics): string {
   else if (genetics.pattern === 'harlequin') parts.push('Harlequin');
   else if (genetics.pattern === 'flame') parts.push('Flame');
   else if (genetics.pattern === 'bicolor') parts.push('Bicolor');
-  else if (genetics.pattern === 'patternless') parts.push('Patternless');
 
   // Pinstripe
   if (genetics.pinstripe === 'quadstripe') parts.push('Quadstripe');
@@ -53,8 +52,13 @@ export function buildMorphString(genetics: GeckoGenetics): string {
   else if (genetics.dalmatian === 'low') parts.push('Dalmatian');
   if (genetics.inkSpot) parts.push('Ink Spot');
 
-  return parts.length > 0 ? parts.join(' ') : 'Normal / Wild Type';
+  if (parts.length === 0) {
+    return genetics.pattern === 'patternless' ? 'Patternless' : 'Normal / Wild Type';
+  }
+
+  return parts.join(' ');
 }
+
 
 /**
  * Calculates possible offspring morph outcomes based on Parent 1 and Parent 2 genetics
