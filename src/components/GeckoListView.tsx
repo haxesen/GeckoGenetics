@@ -315,12 +315,51 @@ export const GeckoListView: React.FC<{
                   <p style={{ color: '#94a3b8', fontSize: '0.85rem' }}>Tenyésztő / Származás: <strong style={{ color: '#f8fafc' }}>{activeGecko.breederName || 'Saját tenyészet'}</strong></p>
                   <p style={{ color: '#94a3b8', fontSize: '0.85rem' }}>Vásárlási Ár: <strong style={{ color: '#38bdf8' }}>{activeGecko.purchasePrice ? `${activeGecko.purchasePrice.toLocaleString()} HUF` : 'Saját kikelés'}</strong></p>
                   <p style={{ color: '#94a3b8', fontSize: '0.85rem' }}>Kikelési Dátum: <strong style={{ color: '#f8fafc' }}>{activeGecko.hatchDate || 'Ismeretlen'}</strong></p>
+
+                  {/* Parents Quick Card */}
+                  {(() => {
+                    const fGecko = activeGecko.fatherId ? geckos.find(g => g.id === activeGecko.fatherId) : null;
+                    const mGecko = activeGecko.motherId ? geckos.find(g => g.id === activeGecko.motherId) : null;
+                    const fName = fGecko ? fGecko.name : (activeGecko.fatherName || null);
+                    const mName = mGecko ? mGecko.name : (activeGecko.motherName || null);
+                    const fPic = fGecko?.mainImageUrl || activeGecko.fatherImageUrl;
+                    const mPic = mGecko?.mainImageUrl || activeGecko.motherImageUrl;
+
+                    if (!fName && !mName) return null;
+
+                    return (
+                      <div style={{
+                        marginTop: '0.4rem',
+                        background: 'rgba(0,0,0,0.3)',
+                        border: '1px solid rgba(255,255,255,0.06)',
+                        padding: '0.5rem 0.75rem',
+                        borderRadius: 8,
+                        display: 'flex',
+                        gap: '1rem'
+                      }}>
+                        {fName && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                            {fPic && <img src={fPic} alt="Apa" style={{ width: 28, height: 28, borderRadius: 4, objectFit: 'cover' }} />}
+                            <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>♂ Apa: <strong style={{ color: '#38bdf8' }}>{fName}</strong></span>
+                          </div>
+                        )}
+                        {mName && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                            {mPic && <img src={mPic} alt="Anya" style={{ width: 28, height: 28, borderRadius: 4, objectFit: 'cover' }} />}
+                            <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>♀ Anya: <strong style={{ color: '#fb7185' }}>{mName}</strong></span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
+
                   {activeGecko.notes && (
                     <p style={{ color: '#cbd5e1', fontSize: '0.85rem', background: 'rgba(255,255,255,0.03)', padding: '0.65rem', borderRadius: 8, marginTop: '0.4rem' }}>
                       📝 {activeGecko.notes}
                     </p>
                   )}
                 </div>
+
               </div>
 
               {/* Weight Log & Chart Section */}

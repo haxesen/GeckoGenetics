@@ -40,12 +40,15 @@ export interface Gecko {
   motherId?: string;         // Anya azonosítója
   fatherName?: string;       // Szabad szavas apa név
   motherName?: string;       // Szabad szavas anya név
+  fatherImageUrl?: string;   // Apa fotója (ha nincsen az adatbázisban)
+  motherImageUrl?: string;   // Anya fotója (ha nincsen az adatbázisban)
   weightGrams?: number;      // Utolsó mért súly
   notes?: string;
   mainImageUrl?: string;
   images?: string[];
   createdAt: string;
 }
+
 
 export interface WeightEntry {
   id: string;

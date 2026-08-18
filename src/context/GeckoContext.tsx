@@ -63,6 +63,8 @@ export const GeckoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               motherId: row.mother_id,
               fatherName: row.father_name,
               motherName: row.mother_name,
+              fatherImageUrl: row.father_image_url,
+              motherImageUrl: row.mother_image_url,
               weightGrams: row.weight_grams,
               notes: row.notes,
               mainImageUrl: row.main_image_url || (row.images && row.images[0]) || undefined,
@@ -188,6 +190,8 @@ export const GeckoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           mother_id: newGecko.motherId,
           father_name: newGecko.fatherName,
           mother_name: newGecko.motherName,
+          father_image_url: newGecko.fatherImageUrl,
+          mother_image_url: newGecko.motherImageUrl,
           weight_grams: newGecko.weightGrams,
           notes: newGecko.notes,
           main_image_url: newGecko.mainImageUrl || (newGecko.images && newGecko.images[0]) || null,
@@ -216,8 +220,13 @@ export const GeckoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         if (updates.status !== undefined) payload.status = updates.status;
         if (updates.fatherId !== undefined) payload.father_id = updates.fatherId;
         if (updates.motherId !== undefined) payload.mother_id = updates.motherId;
+        if (updates.fatherName !== undefined) payload.father_name = updates.fatherName;
+        if (updates.motherName !== undefined) payload.mother_name = updates.motherName;
+        if (updates.fatherImageUrl !== undefined) payload.father_image_url = updates.fatherImageUrl;
+        if (updates.motherImageUrl !== undefined) payload.mother_image_url = updates.motherImageUrl;
         if (updates.weightGrams !== undefined) payload.weight_grams = updates.weightGrams;
         if (updates.notes !== undefined) payload.notes = updates.notes;
+
         if (updates.mainImageUrl !== undefined) payload.main_image_url = updates.mainImageUrl;
         if (updates.images !== undefined) {
           payload.images = updates.images;

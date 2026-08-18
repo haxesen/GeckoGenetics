@@ -59,6 +59,10 @@ export const AddGeckoModal: React.FC<{
   const [purchasePrice, setPurchasePrice] = useState<string>('');
   const [fatherId, setFatherId] = useState<string>('');
   const [motherId, setMotherId] = useState<string>('');
+  const [fatherName, setFatherName] = useState<string>('');
+  const [motherName, setMotherName] = useState<string>('');
+  const [fatherImageUrl, setFatherImageUrl] = useState<string>('');
+  const [motherImageUrl, setMotherImageUrl] = useState<string>('');
   const [weightGrams, setWeightGrams] = useState<string>('');
   const [notes, setNotes] = useState('');
   const [images, setImages] = useState<string[]>([]);
@@ -73,6 +77,18 @@ export const AddGeckoModal: React.FC<{
   const [genetics, setGenetics] = useState<GeckoGenetics>({ ...DEFAULT_GENETICS });
 
   if (!isOpen) return null;
+
+  const handleParentFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, parent: 'father' | 'mother') => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const dataUrl = await compressImage(file);
+      if (parent === 'father') setFatherImageUrl(dataUrl);
+      else setMotherImageUrl(dataUrl);
+    } catch (err) {
+      console.error('Szülő kép feldolgozási hiba:', err);
+    }
+  };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, targetIndex?: number) => {
     const file = e.target.files?.[0];
@@ -90,6 +106,7 @@ export const AddGeckoModal: React.FC<{
       setIsUploading(false);
     }
   };
+
 
   const handleAddUrl = () => {
     if (!urlInput.trim() || images.length >= 3) return;
@@ -116,6 +133,9 @@ export const AddGeckoModal: React.FC<{
 
     const calculatedMorph = buildMorphString(genetics);
 
+    const selFather = geckos.find(g => g.id === fatherId);
+    const selMother = geckos.find(g => g.id === motherId);
+
     addGecko({
       name: name.trim(),
       code: code.trim(),
@@ -128,6 +148,10 @@ export const AddGeckoModal: React.FC<{
       purchasePrice: purchasePrice ? parseFloat(purchasePrice) : undefined,
       fatherId: fatherId || undefined,
       motherId: motherId || undefined,
+      fatherName: selFather ? selFather.name : (fatherName.trim() || undefined),
+      motherName: selMother ? selMother.name : (motherName.trim() || undefined),
+      fatherImageUrl: selFather ? (selFather.mainImageUrl || fatherImageUrl) : (fatherImageUrl || undefined),
+      motherImageUrl: selMother ? (selMother.mainImageUrl || motherImageUrl) : (motherImageUrl || undefined),
       weightGrams: weightGrams ? parseFloat(weightGrams) : undefined,
       notes: notes.trim() || undefined,
       mainImageUrl: images[0] || undefined,
@@ -136,6 +160,7 @@ export const AddGeckoModal: React.FC<{
 
     onClose();
   };
+
 
 
   const maleGeckos = geckos.filter(g => g.gender === 'male');
@@ -196,31 +221,95 @@ export const AddGeckoModal: React.FC<{
               </div>
             </div>
 
-            {/* Parents selection */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
-              <div className="form-group" style={{ margin: 0 }}>
-                <label className="form-label">♂ APA az adatbázisból:</label>
-                <select className="form-select" value={fatherId} onChange={e => setFatherId(e.target.value)}>
-                  <option value="">Nincs apai adat</option>
-                  {maleGeckos.map(m => (
-                    <option key={m.id} value={m.id}>{m.name} ({m.code})</option>
-                  ))}
-                </select>
-              </div>
-              <div className="form-group" style={{ margin: 0 }}>
-                <label className="form-label">♀ ANYA az adatbázisból:</label>
-                <select className="form-select" value={motherId} onChange={e => setMotherId(e.target.value)}>
-                  <option value="">Nincs anyai adat</option>
-                  {femaleGeckos.map(f => (
-                    <option key={f.id} value={f.id}>{f.name} ({f.code})</option>
-                  ))}
-                </select>
-              </div>
-              <div className="form-group" style={{ margin: 0 }}>
-                <label className="form-label">Kezdő Súly (g):</label>
-                <input type="number" step="0.1" className="form-input" placeholder="pl. 45.2" value={weightGrams} onChange={e => setWeightGrams(e.target.value)} />
+            {/* Parents Selection & External Parent Photo Uploads */}
+            <div style={{
+              background: 'rgba(0,0,0,0.2)',
+              border: '1px solid rgba(255,255,255,0.06)',
+              borderRadius: 10,
+              padding: '1rem',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.85rem'
+            }}>
+              <h4 style={{ fontSize: '0.9rem', color: '#38bdf8', margin: 0, fontWeight: 700 }}>
+                🧬 Szülők & Családfa Fotók
+              </h4>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', alignItems: 'flex-start' }}>
+                {/* Father Selection / Name / Photo */}
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label className="form-label" style={{ color: '#38bdf8' }}>♂ APA Kiválasztása:</label>
+                  <select className="form-select" value={fatherId} onChange={e => setFatherId(e.target.value)}>
+                    <option value="">Külső APA / Szabad név</option>
+                    {maleGeckos.map(m => (
+                      <option key={m.id} value={m.id}>{m.name} ({m.code})</option>
+                    ))}
+                  </select>
+
+                  {!fatherId && (
+                    <div style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                      <input 
+                        type="text" 
+                        className="form-input" 
+                        placeholder="Külső Apa Neve (pl. Thor)" 
+                        value={fatherName} 
+                        onChange={e => setFatherName(e.target.value)} 
+                      />
+                      <label className="btn btn-secondary btn-sm" style={{ cursor: 'pointer', fontSize: '0.75rem', justifyContent: 'center' }}>
+                        <Upload size={12} /> {fatherImageUrl ? '✓ Apa Fotó Cseréje' : '📷 Apa Fotó Feltöltése'}
+                        <input type="file" accept="image/*" onChange={e => handleParentFileUpload(e, 'father')} style={{ display: 'none' }} />
+                      </label>
+                      {fatherImageUrl && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                          <img src={fatherImageUrl} alt="Apa" style={{ width: 32, height: 32, borderRadius: 4, objectFit: 'cover' }} />
+                          <span style={{ fontSize: '0.7rem', color: '#34d399' }}>Apa képe csatolva</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Mother Selection / Name / Photo */}
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label className="form-label" style={{ color: '#fb7185' }}>♀ ANYA Kiválasztása:</label>
+                  <select className="form-select" value={motherId} onChange={e => setMotherId(e.target.value)}>
+                    <option value="">Külső ANYA / Szabad név</option>
+                    {femaleGeckos.map(f => (
+                      <option key={f.id} value={f.id}>{f.name} ({f.code})</option>
+                    ))}
+                  </select>
+
+                  {!motherId && (
+                    <div style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                      <input 
+                        type="text" 
+                        className="form-input" 
+                        placeholder="Külső Anya Neve (pl. Freya)" 
+                        value={motherName} 
+                        onChange={e => setMotherName(e.target.value)} 
+                      />
+                      <label className="btn btn-secondary btn-sm" style={{ cursor: 'pointer', fontSize: '0.75rem', justifyContent: 'center' }}>
+                        <Upload size={12} /> {motherImageUrl ? '✓ Anya Fotó Cseréje' : '📷 Anya Fotó Feltöltése'}
+                        <input type="file" accept="image/*" onChange={e => handleParentFileUpload(e, 'mother')} style={{ display: 'none' }} />
+                      </label>
+                      {motherImageUrl && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                          <img src={motherImageUrl} alt="Anya" style={{ width: 32, height: 32, borderRadius: 4, objectFit: 'cover' }} />
+                          <span style={{ fontSize: '0.7rem', color: '#34d399' }}>Anya képe csatolva</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Weight */}
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label className="form-label">Kezdő Súly (g):</label>
+                  <input type="number" step="0.1" className="form-input" placeholder="pl. 45.2" value={weightGrams} onChange={e => setWeightGrams(e.target.value)} />
+                </div>
               </div>
             </div>
+
 
             {/* Max 3 WebP Images Upload & Hatch Date */}
             <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1rem', alignItems: 'flex-start' }}>
