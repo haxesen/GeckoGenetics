@@ -31,16 +31,31 @@ When transferring data between TypeScript and Supabase:
 - `Gecko.hatchDate` <-> `cg_geckos.hatch_date`
 - `Gecko.breederName` <-> `cg_geckos.breeder_name`
 - `Gecko.purchasePrice` <-> `cg_geckos.purchase_price`
+- `Gecko.purchaseDate` <-> `cg_geckos.purchase_date`
 - `Gecko.fatherId` <-> `cg_geckos.father_id`
 - `Gecko.motherId` <-> `cg_geckos.mother_id`
+- `Gecko.fatherName` <-> `cg_geckos.father_name`
+- `Gecko.motherName` <-> `cg_geckos.mother_name`
+- `Gecko.fatherImageUrl` <-> `cg_geckos.father_image_url`
+- `Gecko.motherImageUrl` <-> `cg_geckos.mother_image_url`
 - `Gecko.weightGrams` <-> `cg_geckos.weight_grams`
 - `Gecko.mainImageUrl` <-> `cg_geckos.main_image_url`
 
 ---
 
-## 4. Deployment & Build Verification Workflow
+## 4. Key UI Components & Modals
+
+- **`ImageCropModal`**: WebP compression, aspect ratio toggling (4:3 / 1:1), rotation (90°), automatic fit scale, and `Teljes Kép Használata` bypass.
+- **`ImageLightboxModal`**: Full-screen high-resolution zoom overlay for thumbnails, main photo, and parent photos.
+- **`DashboardView`**: Collapsible `Gyors Párzási Szimulátor` and `Inkubációs Visszaszámláló` panels (collapsed by default), ambient glass blur card image presentation.
+- **`MorphCalculatorView`**: Independent parent selection (Database Gecko vs Custom Genetics for Father & Mother) with DB-to-custom genetics cloning.
+
+---
+
+## 5. Deployment & Build Verification Workflow
 
 Before pushing code changes to GitHub:
 1. Run `npm run build` locally to verify TypeScript type-checking and bundling.
 2. Commit changes with clear conventional commit messages (`feat:`, `fix:`, `docs:`, `refactor:`).
 3. Push to `main` branch on GitHub (`https://github.com/haxesen/GeckoGenetics.git`) to trigger automatic Vercel deployment.
+
