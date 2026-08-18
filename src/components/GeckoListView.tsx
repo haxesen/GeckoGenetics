@@ -4,6 +4,7 @@ import type { Gecko } from '../types/gecko';
 import { QRCodeSVG } from 'qrcode.react';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { EditGeckoModal } from './EditGeckoModal';
+import { ImageLightboxModal } from './ImageLightboxModal';
 import { getGeckoImage, DEFAULT_GECKO_IMAGE } from '../utils/imageHelper';
 import { 
 
@@ -34,6 +35,10 @@ export const GeckoListView: React.FC<{
   const [editingGecko, setEditingGecko] = useState<Gecko | null>(null);
   const [showQrModal, setShowQrModal] = useState<Gecko | null>(null);
   const [newWeightInput, setNewWeightInput] = useState<string>('');
+
+  // Lightbox Full-screen image zoom state
+  const [lightbox, setLightbox] = useState<{ src: string; title?: string } | null>(null);
+
 
 
   // Filtering
@@ -141,7 +146,14 @@ export const GeckoListView: React.FC<{
             >
               <div>
                 {/* Image Header (4:3 Ratio) */}
-                <div style={{ aspectRatio: '4 / 3', position: 'relative', overflow: 'hidden', background: '#0f172a' }}>
+                <div 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setLightbox({ src: getGeckoImage(gecko), title: `${gecko.name} (${gecko.code})` });
+                  }}
+                  title="Nagyítás teljes képernyőn"
+                  style={{ aspectRatio: '4 / 3', position: 'relative', overflow: 'hidden', background: '#0f172a', cursor: 'pointer' }}
+                >
                   <img 
                     src={getGeckoImage(gecko)}
                     alt={gecko.name}
@@ -167,6 +179,7 @@ export const GeckoListView: React.FC<{
                     {gecko.status === 'breeder' ? 'Tenyész' : gecko.status === 'for_sale' ? 'Eladó' : gecko.status}
                   </span>
                 </div>
+
 
 
                 {/* Content */}
@@ -285,7 +298,9 @@ export const GeckoListView: React.FC<{
                         <img 
                           src={currentImg}
                           alt={activeGecko.name}
-                          style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover', borderRadius: 12, border: '1px solid rgba(255,255,255,0.1)' }}
+                          onClick={() => setLightbox({ src: currentImg, title: `${activeGecko.name} (${activeGecko.code})` })}
+                          title="Kattints a felnagyításhoz"
+                          style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover', borderRadius: 12, border: '1px solid rgba(255,255,255,0.1)', cursor: 'zoom-in' }}
                         />
                         {geckoImages.length > 1 && (
                           <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
@@ -294,7 +309,11 @@ export const GeckoListView: React.FC<{
                                 key={i}
                                 src={img}
                                 alt={`Foto ${i + 1}`}
-                                onClick={() => setActivePhotoIdx(i)}
+                                onClick={() => {
+                                  setActivePhotoIdx(i);
+                                  setLightbox({ src: img, title: `${activeGecko.name} — Fotó ${i + 1}` });
+                                }}
+                                title="Kattints a felnagyításhoz"
                                 style={{
                                   width: 44,
                                   height: 44,
@@ -390,15 +409,20 @@ export const GeckoListView: React.FC<{
                     </h5>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                       {/* Father Card */}
-                      <div style={{
-                        background: 'rgba(15, 23, 42, 0.6)',
-                        border: '1px solid rgba(56, 189, 248, 0.2)',
-                        borderRadius: 8,
-                        padding: '0.65rem 0.85rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.75rem'
-                      }}>
+                      <div 
+                        onClick={() => fPic && setLightbox({ src: fPic, title: `♂ APA (Sire): ${fName || 'Ismeretlen Apa'}` })}
+                        title={fPic ? 'Kattints a felnagyításhoz' : ''}
+                        style={{
+                          background: 'rgba(15, 23, 42, 0.6)',
+                          border: '1px solid rgba(56, 189, 248, 0.2)',
+                          borderRadius: 8,
+                          padding: '0.65rem 0.85rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.75rem',
+                          cursor: fPic ? 'pointer' : 'default'
+                        }}
+                      >
                         <img 
                           src={fPic || DEFAULT_GECKO_IMAGE} 
                           alt="Apa" 
@@ -416,15 +440,20 @@ export const GeckoListView: React.FC<{
                       </div>
 
                       {/* Mother Card */}
-                      <div style={{
-                        background: 'rgba(15, 23, 42, 0.6)',
-                        border: '1px solid rgba(251, 113, 133, 0.2)',
-                        borderRadius: 8,
-                        padding: '0.65rem 0.85rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.75rem'
-                      }}>
+                      <div 
+                        onClick={() => mPic && setLightbox({ src: mPic, title: `♀ ANYA (Dam): ${mName || 'Ismeretlen Anya'}` })}
+                        title={mPic ? 'Kattints a felnagyításhoz' : ''}
+                        style={{
+                          background: 'rgba(15, 23, 42, 0.6)',
+                          border: '1px solid rgba(251, 113, 133, 0.2)',
+                          borderRadius: 8,
+                          padding: '0.65rem 0.85rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.75rem',
+                          cursor: mPic ? 'pointer' : 'default'
+                        }}
+                      >
                         <img 
                           src={mPic || DEFAULT_GECKO_IMAGE} 
                           alt="Anya" 
@@ -444,6 +473,7 @@ export const GeckoListView: React.FC<{
                   </div>
                 );
               })()}
+
 
               {/* Genetics Badges Summary */}
 
@@ -595,13 +625,22 @@ export const GeckoListView: React.FC<{
             </div>
 
             <div className="modal-footer">
-              <button onClick={() => window.print()} className="btn btn-primary">Nyomtatás</button>
-              <button onClick={() => setShowQrModal(null)} className="btn btn-secondary">Bezárás</button>
+              <button onClick={() => window.print()} className="btn btn-secondary">Nyomtatás</button>
+              <button onClick={() => setShowQrModal(null)} className="btn btn-primary">Kész</button>
             </div>
           </div>
         </div>
       )}
+
+      {/* Image Lightbox Full-screen Zoom Modal */}
+      {lightbox && (
+        <ImageLightboxModal
+          isOpen={Boolean(lightbox)}
+          imageSrc={lightbox.src}
+          title={lightbox.title}
+          onClose={() => setLightbox(null)}
+        />
+      )}
     </div>
   );
 };
-
