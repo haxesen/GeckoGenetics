@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { useGeckoContext } from '../context/GeckoContext';
 import type { Gender, GeckoStatus, GeckoGenetics } from '../types/gecko';
 import { DEFAULT_GENETICS, buildMorphString } from '../utils/genetics';
-import { PlusCircle, Dna, Upload, Link } from 'lucide-react';
+import { PlusCircle, Dna, Upload, Link, Crop } from 'lucide-react';
+import { ImageCropModal } from './ImageCropModal';
 
-const compressImage = (file: File, maxWidth = 1200, maxHeight = 1200, quality = 0.85): Promise<string> => {
+const compressImage = (file: File, maxWidth = 1600, maxHeight = 1600, quality = 0.9): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -63,6 +64,8 @@ export const AddGeckoModal: React.FC<{
   const [mainImageUrl, setMainImageUrl] = useState('');
   const [imageMode, setImageMode] = useState<'upload' | 'url'>('upload');
   const [isUploading, setIsUploading] = useState(false);
+  const [rawImageSrc, setRawImageSrc] = useState<string | null>(null);
+  const [isCropOpen, setIsCropOpen] = useState(false);
 
   // Genetics flags
   const [genetics, setGenetics] = useState<GeckoGenetics>({ ...DEFAULT_GENETICS });
@@ -75,14 +78,16 @@ export const AddGeckoModal: React.FC<{
 
     try {
       setIsUploading(true);
-      const compressedDataUrl = await compressImage(file);
-      setMainImageUrl(compressedDataUrl);
+      const dataUrl = await compressImage(file);
+      setRawImageSrc(dataUrl);
+      setIsCropOpen(true);
     } catch (err) {
       console.error('Kép feldolgozási hiba:', err);
     } finally {
       setIsUploading(false);
     }
   };
+
 
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -299,8 +304,19 @@ export const AddGeckoModal: React.FC<{
                       style={{ width: 44, height: 44, borderRadius: 6, objectFit: 'cover' }} 
                     />
                     <span style={{ fontSize: '0.8rem', color: '#34d399', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      ✓ Kép sikeresen kiválasztva
+                      ✓ Kép csatolva
                     </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setRawImageSrc(mainImageUrl);
+                        setIsCropOpen(true);
+                      }}
+                      className="btn btn-secondary btn-sm"
+                      style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                    >
+                      <Crop size={12} /> Kivágás
+                    </button>
                     <button
                       type="button"
                       onClick={() => setMainImageUrl('')}
@@ -318,6 +334,18 @@ export const AddGeckoModal: React.FC<{
                 <input type="date" className="form-input" value={hatchDate} onChange={e => setHatchDate(e.target.value)} />
               </div>
             </div>
+
+            {/* Image Crop Modal */}
+            <ImageCropModal
+              imageSrc={rawImageSrc || mainImageUrl}
+              isOpen={isCropOpen}
+              onClose={() => setIsCropOpen(false)}
+              onCropComplete={(croppedUrl) => {
+                setMainImageUrl(croppedUrl);
+                setIsCropOpen(false);
+              }}
+            />
+
 
 
             {/* Genetics Flags */}
