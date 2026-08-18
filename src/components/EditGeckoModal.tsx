@@ -68,6 +68,7 @@ export const EditGeckoModal: React.FC<{
   const [notes, setNotes] = useState('');
   const [images, setImages] = useState<string[]>([]);
   const [cropIndex, setCropIndex] = useState<number>(0);
+  const [cropTarget, setCropTarget] = useState<'gecko' | 'father' | 'mother'>('gecko');
   const [imageMode, setImageMode] = useState<'upload' | 'url'>('upload');
   const [urlInput, setUrlInput] = useState('');
   const [isUploading, setIsUploading] = useState(false);
@@ -106,12 +107,24 @@ export const EditGeckoModal: React.FC<{
     const file = e.target.files?.[0];
     if (!file) return;
     try {
+      setIsUploading(true);
       const dataUrl = await compressImage(file);
-      if (parent === 'father') setFatherImageUrl(dataUrl);
-      else setMotherImageUrl(dataUrl);
+      setRawImageSrc(dataUrl);
+      setCropTarget(parent);
+      setIsCropOpen(true);
     } catch (err) {
       console.error('Szülő kép feldolgozási hiba:', err);
+    } finally {
+      setIsUploading(false);
     }
+  };
+
+  const triggerParentCrop = (parent: 'father' | 'mother') => {
+    const src = parent === 'father' ? fatherImageUrl : motherImageUrl;
+    if (!src) return;
+    setRawImageSrc(src);
+    setCropTarget(parent);
+    setIsCropOpen(true);
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, targetIndex?: number) => {
@@ -122,6 +135,7 @@ export const EditGeckoModal: React.FC<{
       setIsUploading(true);
       const dataUrl = await compressImage(file);
       setRawImageSrc(dataUrl);
+      setCropTarget('gecko');
       setCropIndex(targetIndex !== undefined ? targetIndex : images.length);
       setIsCropOpen(true);
     } catch (err) {
@@ -130,6 +144,27 @@ export const EditGeckoModal: React.FC<{
       setIsUploading(false);
     }
   };
+
+  const handleCropSave = (croppedDataUrl: string) => {
+    if (cropTarget === 'father') {
+      setFatherImageUrl(croppedDataUrl);
+    } else if (cropTarget === 'mother') {
+      setMotherImageUrl(croppedDataUrl);
+    } else {
+      setImages(prev => {
+        const copy = [...prev];
+        if (cropIndex < copy.length) {
+          copy[cropIndex] = croppedDataUrl;
+        } else if (copy.length < 3) {
+          copy.push(croppedDataUrl);
+        }
+        return copy;
+      });
+    }
+    setIsCropOpen(false);
+    setRawImageSrc(null);
+  };
+
 
   const handleAddUrl = () => {
     if (!urlInput.trim() || images.length >= 3) return;
@@ -284,9 +319,26 @@ export const EditGeckoModal: React.FC<{
                         <input type="file" accept="image/*" onChange={e => handleParentFileUpload(e, 'father')} style={{ display: 'none' }} />
                       </label>
                       {fatherImageUrl && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'rgba(0,0,0,0.3)', padding: '0.3rem', borderRadius: 6 }}>
                           <img src={fatherImageUrl} alt="Apa" style={{ width: 32, height: 32, borderRadius: 4, objectFit: 'cover' }} />
-                          <span style={{ fontSize: '0.7rem', color: '#34d399' }}>Apa képe csatolva</span>
+                          <button 
+                            type="button" 
+                            onClick={() => triggerParentCrop('father')} 
+                            className="btn btn-secondary btn-sm"
+                            title="Kép kivágása"
+                            style={{ padding: '0.2rem 0.4rem', fontSize: '0.7rem' }}
+                          >
+                            <Crop size={12} /> Vágás
+                          </button>
+                          <button 
+                            type="button" 
+                            onClick={() => setFatherImageUrl('')} 
+                            className="btn btn-danger btn-sm"
+                            title="Törlés"
+                            style={{ padding: '0.2rem 0.4rem', fontSize: '0.7rem' }}
+                          >
+                            ✕
+                          </button>
                         </div>
                       )}
                     </div>
@@ -317,14 +369,32 @@ export const EditGeckoModal: React.FC<{
                         <input type="file" accept="image/*" onChange={e => handleParentFileUpload(e, 'mother')} style={{ display: 'none' }} />
                       </label>
                       {motherImageUrl && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'rgba(0,0,0,0.3)', padding: '0.3rem', borderRadius: 6 }}>
                           <img src={motherImageUrl} alt="Anya" style={{ width: 32, height: 32, borderRadius: 4, objectFit: 'cover' }} />
-                          <span style={{ fontSize: '0.7rem', color: '#34d399' }}>Anya képe csatolva</span>
+                          <button 
+                            type="button" 
+                            onClick={() => triggerParentCrop('mother')} 
+                            className="btn btn-secondary btn-sm"
+                            title="Kép kivágása"
+                            style={{ padding: '0.2rem 0.4rem', fontSize: '0.7rem' }}
+                          >
+                            <Crop size={12} /> Vágás
+                          </button>
+                          <button 
+                            type="button" 
+                            onClick={() => setMotherImageUrl('')} 
+                            className="btn btn-danger btn-sm"
+                            title="Törlés"
+                            style={{ padding: '0.2rem 0.4rem', fontSize: '0.7rem' }}
+                          >
+                            ✕
+                          </button>
                         </div>
                       )}
                     </div>
                   )}
                 </div>
+
 
                 {/* Weight */}
                 <div className="form-group" style={{ margin: 0 }}>
@@ -661,6 +731,19 @@ export const EditGeckoModal: React.FC<{
           </div>
         </form>
       </div>
+
+      {isCropOpen && rawImageSrc && (
+        <ImageCropModal
+          isOpen={isCropOpen}
+          imageSrc={rawImageSrc}
+          onCropComplete={handleCropSave}
+          onClose={() => {
+            setIsCropOpen(false);
+            setRawImageSrc(null);
+          }}
+        />
+      )}
     </div>
   );
 };
+
