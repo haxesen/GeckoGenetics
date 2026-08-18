@@ -138,20 +138,33 @@ export const GeckoListView: React.FC<{
               style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
             >
               <div>
-                {/* Image Header */}
-                <div style={{ height: 200, position: 'relative', overflow: 'hidden', background: '#0f172a' }}>
+                {/* Image Header (4:3 Ratio) */}
+                <div style={{ aspectRatio: '4 / 3', position: 'relative', overflow: 'hidden', background: '#0f172a' }}>
                   <img 
                     src={gecko.mainImageUrl || 'https://images.unsplash.com/photo-1548767797-d8c844163c4c?auto=format&fit=crop&w=800&q=80'}
                     alt={gecko.name}
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   />
-                  <span className={`badge badge-gender-${gecko.gender}`} style={{ position: 'absolute', top: 12, right: 12 }}>
+
+                  {/* Top Gradient Vignette for Badges */}
+                  <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: 60,
+                    background: 'linear-gradient(180deg, rgba(0,0,0,0.55) 0%, transparent 100%)',
+                    pointerEvents: 'none'
+                  }} />
+
+                  <span className={`badge badge-gender-${gecko.gender}`} style={{ position: 'absolute', top: 10, right: 10, zIndex: 2 }}>
                     {gecko.gender === 'male' ? '♂ Hím' : gecko.gender === 'female' ? '♀ Nőstény' : '❓ Unsexed'}
                   </span>
-                  <span className={`badge badge-status-${gecko.status}`} style={{ position: 'absolute', top: 12, left: 12 }}>
+                  <span className={`badge badge-status-${gecko.status}`} style={{ position: 'absolute', top: 10, left: 10, zIndex: 2 }}>
                     {gecko.status === 'breeder' ? 'Tenyész' : gecko.status === 'for_sale' ? 'Eladó' : gecko.status}
                   </span>
                 </div>
+
 
                 {/* Content */}
                 <div style={{ padding: '1.25rem' }}>

@@ -19,9 +19,14 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
   const [position, setPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [aspectRatio, setAspectRatio] = useState<'4:3' | '1:1'>('4:3');
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const imageRef = useRef<HTMLImageElement | null>(null);
+
+  // Dimensions for preview box
+  const cropW = 360;
+  const cropH = aspectRatio === '4:3' ? 270 : 360;
 
   // Load image object when imageSrc changes
   useEffect(() => {
@@ -37,13 +42,13 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
         drawCanvas(img, 1, 0, { x: 0, y: 0 });
       };
     }
-  }, [imageSrc]);
+  }, [imageSrc, aspectRatio]);
 
   useEffect(() => {
     if (imageRef.current) {
       drawCanvas(imageRef.current, zoom, rotation, position);
     }
-  }, [zoom, rotation, position]);
+  }, [zoom, rotation, position, aspectRatio]);
 
   const drawCanvas = (
     img: HTMLImageElement,
@@ -56,15 +61,12 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const width = canvas.width;
-    const height = canvas.height;
-
     // Clear canvas
-    ctx.clearRect(0, 0, width, height);
+    ctx.clearRect(0, 0, cropW, cropH);
 
     ctx.save();
     // Move to center
-    ctx.translate(width / 2 + currentPos.x, height / 2 + currentPos.y);
+    ctx.translate(cropW / 2 + currentPos.x, cropH / 2 + currentPos.y);
     ctx.rotate((currentRotation * Math.PI) / 180);
     ctx.scale(currentZoom, currentZoom);
 
@@ -94,39 +96,38 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
     const canvas = canvasRef.current;
     if (!canvas || !imageRef.current) return;
 
-    // Create a 800x800 output canvas for optimal photo quality
+    // Create high-res output canvas
     const outputCanvas = document.createElement('canvas');
-    const outputSize = 800;
-    outputCanvas.width = outputSize;
-    outputCanvas.height = outputSize;
+    const outW = 800;
+    const outH = aspectRatio === '4:3' ? 600 : 800;
+
+    outputCanvas.width = outW;
+    outputCanvas.height = outH;
     const outCtx = outputCanvas.getContext('2d');
 
     if (!outCtx) return;
 
-    // Crop box in preview canvas is the central 340x340 area
-    const cropBoxSize = 340;
-    const scaleFactor = outputSize / cropBoxSize;
+    const scaleFactor = outW / cropW;
 
     outCtx.save();
     outCtx.scale(scaleFactor, scaleFactor);
-    outCtx.translate(cropBoxSize / 2, cropBoxSize / 2);
+    outCtx.translate(cropW / 2, cropH / 2);
     outCtx.translate(position.x, position.y);
     outCtx.rotate((rotation * Math.PI) / 180);
     outCtx.scale(zoom, zoom);
     outCtx.drawImage(imageRef.current, -imageRef.current.width / 2, -imageRef.current.height / 2);
     outCtx.restore();
 
-    const croppedDataUrl = outputCanvas.toDataURL('image/webp', 0.82);
+    const croppedDataUrl = outputCanvas.toDataURL('image/webp', 0.85);
     onCropComplete(croppedDataUrl);
     onClose();
   };
-
 
   if (!isOpen || !imageSrc) return null;
 
   return (
     <div className="modal-overlay" style={{ zIndex: 1100 }}>
-      <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: 500, textAlign: 'center' }}>
+      <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: 520, textAlign: 'center' }}>
         <div className="modal-header">
           <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <Crop color="#10b981" size={20} /> Kép Kivágása & Pozicionálása
@@ -135,21 +136,38 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
         </div>
 
         <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
-          <p style={{ fontSize: '0.85rem', color: '#94a3b8', margin: 0 }}>
-            Húzd az egérrel a képet a kivágó négyzetbe, használd a nagyítást vagy forgatást.
-          </p>
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Méretarány:</span>
+            <button
+              type="button"
+              onClick={() => setAspectRatio('4:3')}
+              className={`btn btn-sm ${aspectRatio === '4:3' ? 'btn-primary' : 'btn-secondary'}`}
+              style={{ fontSize: '0.75rem', padding: '0.2rem 0.6rem' }}
+            >
+              4:3 (Kártya méret - Ajánlott)
+            </button>
+            <button
+              type="button"
+              onClick={() => setAspectRatio('1:1')}
+              className={`btn btn-sm ${aspectRatio === '1:1' ? 'btn-primary' : 'btn-secondary'}`}
+              style={{ fontSize: '0.75rem', padding: '0.2rem 0.6rem' }}
+            >
+              1:1 (Négyzet)
+            </button>
+          </div>
 
           {/* Canvas Preview Box */}
           <div 
             style={{
               position: 'relative',
-              width: 340,
-              height: 340,
+              width: cropW,
+              height: cropH,
               borderRadius: 12,
               overflow: 'hidden',
               background: '#0f172a',
               cursor: isDragging ? 'grabbing' : 'grab',
-              boxShadow: '0 0 0 2px rgba(16, 185, 129, 0.4)'
+              boxShadow: '0 0 0 2px rgba(16, 185, 129, 0.4)',
+              transition: 'height 0.2s ease'
             }}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
@@ -158,8 +176,8 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
           >
             <canvas 
               ref={canvasRef} 
-              width={340} 
-              height={340} 
+              width={cropW} 
+              height={cropH} 
               style={{ width: '100%', height: '100%', display: 'block' }}
             />
 
@@ -170,7 +188,7 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
               pointerEvents: 'none',
               border: '2px dashed rgba(255, 255, 255, 0.8)',
               borderRadius: 10,
-              boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.4)'
+              boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.35)'
             }}>
               {/* Grid lines */}
               <div style={{ position: 'absolute', top: '33.33%', left: 0, right: 0, height: 1, background: 'rgba(255, 255, 255, 0.25)' }} />
